@@ -38,7 +38,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: appIcon.right
         anchors.leftMargin: 5
-        text: "QuickMediaPlayer"
+        text: "QMediaPlayer"
         color: root.titleColor
         font.pixelSize: 20
         font.bold: true
@@ -74,7 +74,7 @@ Item {
         height: 23
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: closeButton.left
-        anchors.rightMargin: 5
+        anchors.rightMargin: 10
         stateCount: 2
         defaultState: "maximize"
         // 最大化时显示还原图标，窗口状态变了图标跟着变
@@ -119,7 +119,7 @@ Item {
         height: 23
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: windowMode.left
-        anchors.rightMargin: 9
+        anchors.rightMargin: 15
 
         ColorImage {
             anchors.fill: parent
