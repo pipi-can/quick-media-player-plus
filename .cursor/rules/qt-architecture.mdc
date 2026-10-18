@@ -1,0 +1,105 @@
+---
+description: Qt 工程架构：目录划分、C++ 后端 / QML 前端、setContextProperty 单例通信、main 保持极薄
+alwaysApply: true
+---
+
+# 工程架构
+
+C++ 只处理数据与业务，QML 只画界面。两者是前后端，不互相掺职责。
+
+## 入口要短
+
+- `main.cpp`：创建 `QGuiApplication`、取出单例、`setContextProperty`、必要时 `addImageProvider`、`engine.load`。不写业务、不写长串 `connect`（放到对应 Manager 或一个很薄的启动辅助类）。
+- `main.qml`：只挂 `AppMainWindow`。不写整页布局、不写控件实现。
+
+```qml
+import QtQuick
+import "./layouts"
+
+FramelessWindow { id: applicationMainWindow }
+```
+
+## C++ ↔ QML
+
+全局后端用单例 + `setContextProperty`，在 `main.cpp` 里注册。
+
+- 单例：`getInstance()`，`QMutex` 保护；`main` 里用 `std::unique_ptr` 接管，且必须声明在 `QQmlApplicationEngine` **之前**，避免退出时 QML 读到空指针。
+- 禁止用 `QML_ELEMENT` / `qmlRegisterType` 注册这些全局对象。
+- 单例属性名用 PascalCase（`AppSettings`、`PlayList`、`ThemeCtx`）；播放器实例可用 `player`。
+- QML 只通过属性、信号、`Q_INVOKABLE` 读写；不要在 QML 里算路径、拼 SQL、做网络。
+
+```cpp
+std::unique_ptr<AppSettings> appSettings(AppSettings::getInstance());
+QQmlApplicationEngine engine;
+engine.rootContext()->setContextProperty("AppSettings", appSettings.get());
+```
+
+## 目录（按功能对齐，头文件与实现成对）
+
+C++ 头文件放 `includes/`，实现放 `sources/`。按功能在两边建**同名子目录**，禁止把头文件和平铺源文件堆在根上。
+
+```
+quick-media-player/
+  main.cpp
+  includes/                 本工程头文件
+    utils/                  工具、路径、日志
+    sql/                    数据库管理
+    settings/               配置、主题
+    playlist/               播放列表、队列、历史、歌词
+    playback/               解码与播放
+    share/                  屏幕共享、聊天
+    download/               联网下载
+  sources/                  与 includes 一一对应的 .cpp
+    utils/  sql/  settings/  playlist/  playback/  share/  download/
+  qml/                      QML 界面，全部放这里，按页面拆
+    main.qml
+    utils/
+    layouts/                  窗口和页面
+      AppMainWindow/
+      TitleBarLayout/
+      PlayLayout/
+      HistoryLayout/
+      SettingsLayout/
+      OtherLayout/
+      CustomComponents/
+  resources/                已导入的 icon，按界面分子目录（不要另放别处）
+    AppIcons/  TitleBarIcons/  PlayWidgetIcons/
+    HistoryWidgetIcons/  AdvancedWidgetIcons/
+  libs/                     已有动态库，按平台分子目录（windows / linux）
+```
+
+成对例子：`includes/sql/databasemanager.h` ↔ `sources/sql/databasemanager.cpp`。`#include` 从 `includes/` 算起，写成 `"sql/databasemanager.h"`。
+
+新功能先定子目录，再同时加头文件和 cpp；没有对应关系的文件不要提交。C++ 按领域拆类，不造万能上帝类。
+
+## QML 类文件
+
+全部 `.qml` 放在 `qml/`，包括入口 `main.qml`。不要放在工程根目录，也不要放进 `includes/`、`sources/`、`resources/`、`libs/`。
+
+按功能建子目录，和 C++ 的 `utils/`、`playlist/` 同一套划分。`qml/` 根上只留 `main.qml`，其余类文件不要平铺在这里。
+
+- 一个类一个文件。文件名等于根组件名，用 PascalCase：`Utils.qml` 的根组件就是 `Utils`。入口固定叫 `main.qml`。
+- 页面和控件用对应的可视组件当根，放在 `qml/layouts/`。无边框窗口本身是 `Window`，例如 `qml/layouts/FramelessWindow.qml`。`main.qml` 只负责挂上它。
+- 不画界面、只放方法的工具类，根组件用 `Item`，放进对应功能目录。例子：`qml/utils/Utils.qml`。
+- 从当前文件所在目录写相对路径引用：`import "./utils"`，再挂上组件。
+- 新文件写进 `CMakeLists.txt` 的 `QML_FILES`。
+
+```qml
+import QtQuick
+
+Item {
+    id: root
+
+    function debug(message) {
+    }
+}
+```
+
+```qml
+import QtQuick
+import "./utils"
+
+Utils { id: utils }
+```
+
+`resources/` 只放 icon 等资源，`libs/` 只放动态库，两者都已就位，不要把源码或 QML 塞进去。新文件写入构建脚本和对应 `.qrc`。

@@ -1,0 +1,57 @@
+---
+description: Qt C++ / QML 代码规范：官方命名、简明中文注释、QML 层层模块化、函数尽量短
+globs: "**/*.{cpp,h,hpp,qml}"
+alwaysApply: false
+---
+
+# 代码规范
+
+先看将要改的文件，沿用其 include、花括号和 QML import 顺序。最小改动；不确定先问。函数尽量不超过 50 行。不引入用户没点名的第三方库。
+
+## 命名（Qt 官方）
+
+| 种类 | 风格 | 例子 |
+| --- | --- | --- |
+| 类、枚举、QML 组件文件 | PascalCase | `PlayList`、`PlayerBar.qml` |
+| 函数、参数、局部、QML id | camelCase | `addFile`、`id: playerBar` |
+| 成员 | `m_` + camelCase | `m_currentIndex` |
+| 信号 | camelCase，说变化 | `currentIndexChanged` |
+| 槽 / `Q_INVOKABLE` | camelCase 动词 | `selectNext` |
+| C++ 文件名 | 小写，跟类走 | `playlist.h`、`playlist.cpp` |
+
+QML 边界用 `QString`、`QUrl`、`QVariantList`；类内部可用 `std` 容器，但不要暴露给 QML。
+
+可写属性必须有 `NOTIFY`。QML 要调、又不是槽的方法用 `Q_INVOKABLE`。
+
+## 注释（中文、简明）
+
+注释解释**为什么**，不翻译是什么。简单赋值、一眼能懂的布局不写。魔数、业务约束、非显而易见的流程要写。复杂函数用：
+
+```cpp
+/**
+ * @brief 设置当前播放项下标
+ * @param index 列表位置，-1 表示未选中
+ * @retval 无
+ */
+void setCurrentIndex(int index);
+```
+
+标签保持英文，说明用中文。不要英文注释，不要中英混写。
+
+## QML 模块化
+
+- 一个可视化或逻辑块一个文件；文件名 = 根组件名。
+- `main.qml` / `AppMainWindow.qml` 只组装。整页、整条控制栏、整份列表不准内联堆在入口里。
+- 能复用的控件抽到 `qml/layouts/CustomComponents/`，页面再层层调用：窗口 → 页面 → 区块 → 原子控件。
+- 参考：`PlayWidget` 再拆 `VideoPlayWidget` / `MusicPlayWidget` / `PlayControllerWidget`；滑条用 `HorizontalSlider` / `VerticalSlider`，不要每个页面复制一份。
+- id、属性、自定义信号用 camelCase。优先 Qt Quick Controls。
+- import 顺序：`QtQuick` → `QtQuick.Controls` → 其他 Qt 模块 → 相对路径组件。
+
+```qml
+// ❌ 把播放条、队列、标题栏全写进一个文件
+// ✅ 窗口只放子组件
+PlayWidget { id: playWidget }
+TitleBarWidget { id: titleBar }
+```
+
+新加 `.qml` / 源文件时同步改 `.qrc` 和 `.pro`。
