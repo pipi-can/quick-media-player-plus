@@ -13,6 +13,8 @@ Item {
     readonly property color iconPress: "#ffffff"
     readonly property color titleColor: "#ffffff"
     readonly property color logoColor: "#19adfa"
+    // 只有关闭按钮悬停和按下是红的，避免按下去又闪回白色
+    readonly property color closeColor: "#e81123"
 
     // 无边框窗口只能从标题栏空白处拖。写在按钮前面，点按钮时由上层鼠标层接收
     MouseArea {
@@ -60,8 +62,8 @@ Item {
             id: closeMouse
             anchors.fill: parent
             normalColor: root.iconNormal
-            hoverColor: root.iconHover
-            pressColor: root.iconPress
+            hoverColor: root.closeColor
+            pressColor: root.closeColor
             onClicked: Window.window.close()
         }
     }
