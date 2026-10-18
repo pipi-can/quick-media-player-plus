@@ -23,6 +23,7 @@ qt_add_qml_module(appquick-media-player
         qml/layouts/FramelessWindow.qml
         qml/layouts/CustomComponents/ColorImage.qml
         qml/layouts/CustomComponents/MultiStateItem.qml
+        qml/layouts/CustomComponents/MouseStateItem.qml
     RESOURCES
         resources/TitleBarIcons/maximize.svg
         resources/TitleBarIcons/normalize.svg
