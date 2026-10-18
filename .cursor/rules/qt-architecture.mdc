@@ -83,6 +83,7 @@ quick-media-player/
 - 不画界面、只放方法的工具类，根组件用 `Item`，放进对应功能目录。例子：`qml/utils/Utils.qml`。
 - 从当前文件所在目录写相对路径引用：`import "./utils"`，再挂上组件。
 - 新文件写进 `CMakeLists.txt` 的 `QML_FILES`。
+- 函数和变量在看不出用途时写中文注释。变量写它受什么约束，函数用 `@brief` 写它为什么这样做。一眼能看懂的不写。
 
 ```qml
 import QtQuick
@@ -101,6 +102,14 @@ import "./utils"
 
 Utils { id: utils }
 ```
+
+`MultiStateItem` 自己按名字切换控件，不用 QML 的 `states`。
+
+- `stateCount`：状态个数。
+- `stateInfos`：状态信息，名字字段固定叫 `name`。
+- `items`：控件列表，用 `var` 传入，和 `stateInfos` 顺序一一对应。控件之间没有关联。
+- `defaultState`：默认状态名。`currentState`：当前状态名。
+- 切换状态只改变对应控件的显示。
 
 `resources/` 只放 icon 等资源，`libs/` 只放动态库，两者都已就位，不要把源码或 QML 塞进去。新文件写入构建脚本和对应 `.qrc`。
 

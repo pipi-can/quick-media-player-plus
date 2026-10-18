@@ -8,11 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 REQUIRED COMPONENTS Quick Core5Compat)
 
 
-# 运行时往 states 里追加 State，交给 QML 编译器会把 states 当成只读
-set_source_files_properties(qml/layouts/CustomComponents/MultiStateItem.qml PROPERTIES
-    QT_QML_SKIP_CACHEGEN ON
-)
-
 qt_add_executable(appquick-media-player
     main.cpp
     includes/utils/logger.h

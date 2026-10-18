@@ -18,14 +18,25 @@ FramelessWindow {
         height: 36
         anchors.centerIn: parent
         stateCount: 2
-        currentState: 0
+        defaultState: "maximize"
+        currentState: "maximize"
         stateInfos: [
-            { source: "qrc:/quick-media-player/resources/TitleBarIcons/maximize.svg", color: "#d7deea" },
-            { source: "qrc:/quick-media-player/resources/TitleBarIcons/normalize.svg", color: "#f0c36a" }
+            { name: "maximize" },
+            { name: "normalize" }
         ]
+        items: [ maximizeIcon, normalizeIcon ]
 
         ColorImage {
+            id: maximizeIcon
             anchors.fill: parent
+            source: "qrc:/quick-media-player/resources/TitleBarIcons/maximize.svg"
+            color: "#d7deea"
+        }
+        ColorImage {
+            id: normalizeIcon
+            anchors.fill: parent
+            source: "qrc:/quick-media-player/resources/TitleBarIcons/normalize.svg"
+            color: "#f0c36a"
         }
     }
 
