@@ -13,7 +13,8 @@ Item {
     // 不能标 readonly：ColorAnimation 要逐帧写中间色
     property color windowColor: themeName === "Light" ? "#f4f5f9" : "#0e162a"
     property color titleColor: themeName === "Light" ? "#000000" : "#ffffff"
-    property color iconNormal: themeName === "Light" ? "#ACB5C3" : "#a3a3a6"
+    // 浅色平时色在旧值 #ACB5C3 上压暗约 20%，免得在白底上发飘
+    property color iconNormal: themeName === "Light" ? "#8A919C" : "#a3a3a6"
     property color iconHover: themeName === "Light" ? "#212C40" : "#ffffff"
     readonly property color iconPress: iconHover
     readonly property color logoColor: "#19adfa"
@@ -201,8 +202,8 @@ Item {
 
     Item {
         id: settingsButton
-        width: 25
-        height: 25
+        width: 24
+        height: 24
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: themeButton.left
         anchors.rightMargin: 14
