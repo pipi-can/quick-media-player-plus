@@ -1,5 +1,6 @@
 import QtQuick
 import "../CustomComponents"
+import "../../settings"
 
 Item {
     id: root
@@ -7,23 +8,30 @@ Item {
     // 和旧标题栏一样高
     height: 60
 
-    // 默认深色。浅色、深色的色值沿用旧工程
-    property string themeName: "Dark"
+    property Theme theme: null
 
     // 不能标 readonly：ColorAnimation 要逐帧写中间色
-    property color windowColor: themeName === "Light" ? "#f4f5f9" : "#0e162a"
-    property color titleColor: themeName === "Light" ? "#000000" : "#ffffff"
-    // 浅色平时色在旧值 #ACB5C3 上压暗约 20%，免得在白底上发飘
-    property color iconNormal: themeName === "Light" ? "#8A919C" : "#a3a3a6"
-    property color iconHover: themeName === "Light" ? "#212C40" : "#ffffff"
-    readonly property color iconPress: iconHover
-    readonly property color logoColor: "#19adfa"
+    property color windowColor: paint("windowNormal")
+    property color titleColor: paint("titleNormal")
+    property color iconNormal: paint("iconNormal")
+    property color iconHover: paint("iconHover")
+    property color iconPress: paint("iconPress")
+    property color logoColor: paint("logoNormal")
+    property color closeHover: paint("closeHover")
+    property color closePress: paint("closePress")
 
-    // 颜色自己缓过去，窗口背景绑的就是这个值，所以能看见切换过程
-    Behavior on windowColor { ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
-    Behavior on titleColor { ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
-    Behavior on iconNormal { ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
-    Behavior on iconHover { ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+    // 配色没到齐时不缓动，否则启动会从透明色淡过来
+    Behavior on windowColor { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+    Behavior on titleColor { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+    Behavior on iconNormal { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+    Behavior on iconHover { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+    Behavior on iconPress { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+
+    function paint(key) {
+        if (!theme)
+            return "#00000000"
+        return theme.colorOf(key)
+    }
 
     Binding {
         target: root.Window.window
@@ -31,8 +39,6 @@ Item {
         value: root.windowColor
         when: root.Window.window !== null
     }
-    // 只有关闭按钮悬停和按下是红的，避免按下去又闪回白色
-    readonly property color closeColor: "#e81123"
 
     // 无边框窗口只能从标题栏空白处拖。写在按钮前面，点按钮时由上层鼠标层接收
     MouseArea {
@@ -80,8 +86,8 @@ Item {
             id: closeMouse
             anchors.fill: parent
             normalColor: root.iconNormal
-            hoverColor: root.closeColor
-            pressColor: root.closeColor
+            hoverColor: root.closeHover
+            pressColor: root.closePress
             onClicked: Window.window.close()
         }
     }
@@ -191,12 +197,9 @@ Item {
 
         ThemePopup {
             id: themePopup
-            themeName: root.themeName
+            theme: root.theme
             x: (parent.width - width) / 2
             y: parent.height + 8
-            onThemePicked: function (name) {
-                root.themeName = name
-            }
         }
     }
 

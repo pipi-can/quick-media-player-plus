@@ -16,7 +16,8 @@ Window {
     color: "transparent"
 
     property int radius: 5
-    property color backgroundColor: "#0e162a"
+    // 底色由主题配色写过来，这里先空着
+    property color backgroundColor: "#00000000"
 
     Rectangle {
         id: background

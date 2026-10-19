@@ -27,7 +27,9 @@ qt_add_qml_module(appquick-media-player
         qml/layouts/CustomComponents/Seprator.qml
         qml/layouts/TitleBarLayout/TitleBar.qml
         qml/layouts/TitleBarLayout/ThemePopup.qml
+        qml/settings/Theme.qml
     RESOURCES
+        qml/settings/theme.json
         resources/AppIcons/MainIcon.svg
         resources/TitleBarIcons/minimize.svg
         resources/TitleBarIcons/maximize.svg

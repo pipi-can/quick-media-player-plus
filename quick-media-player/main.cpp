@@ -7,6 +7,9 @@
 
 int main(int argc, char *argv[])
 {
+    // Qt 默认禁止 QML 读取 qrc 里的 json，主题配色打不开这个开关
+    qputenv("QML_XHR_ALLOW_FILE_READ", "1");
+
     QGuiApplication app(argc, argv);
 
     Logger::getInstance().setLogLevel(Logger::Debug);

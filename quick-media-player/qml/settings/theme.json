@@ -1,0 +1,33 @@
+{
+    "themeCount": 2,
+    "theme": [
+        {
+            "name": "Dark",
+            "caption": "深色",
+            "windowNormal": "rgba(14, 22, 42, 1)",
+            "titleNormal": "rgba(255, 255, 255, 1)",
+            "iconNormal": "rgba(163, 163, 166, 1)",
+            "iconHover": "rgba(255, 255, 255, 1)",
+            "iconPress": "rgba(255, 255, 255, 1)",
+            "closeHover": "rgba(232, 17, 35, 1)",
+            "closePress": "rgba(232, 17, 35, 1)",
+            "logoNormal": "rgba(25, 173, 250, 1)",
+            "popupNormal": "rgba(21, 33, 64, 1)",
+            "popupBorder": "rgba(44, 68, 133, 1)"
+        },
+        {
+            "name": "Light",
+            "caption": "浅色",
+            "windowNormal": "rgba(244, 245, 249, 1)",
+            "titleNormal": "rgba(0, 0, 0, 1)",
+            "iconNormal": "rgba(138, 145, 156, 1)",
+            "iconHover": "rgba(33, 44, 64, 1)",
+            "iconPress": "rgba(33, 44, 64, 1)",
+            "closeHover": "rgba(232, 17, 35, 1)",
+            "closePress": "rgba(232, 17, 35, 1)",
+            "logoNormal": "rgba(25, 173, 250, 1)",
+            "popupNormal": "rgba(255, 255, 255, 1)",
+            "popupBorder": "rgba(175, 178, 186, 1)"
+        }
+    ]
+}
