@@ -88,8 +88,3 @@ void Logger::log(Level level, const QString &file, int line, const QString &mess
 {
     write(level, fileBaseName(file), line, message);
 }
-
-void Logger::logError(const QString &file, int line, const QString &message)
-{
-    log(Error, file, line, message);
-}
