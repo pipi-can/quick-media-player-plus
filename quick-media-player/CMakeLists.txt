@@ -26,6 +26,7 @@ qt_add_qml_module(appquick-media-player
         qml/layouts/CustomComponents/MouseStateItem.qml
         qml/layouts/CustomComponents/Seprator.qml
         qml/layouts/TitleBarLayout/TitleBar.qml
+        qml/layouts/TitleBarLayout/ThemePopup.qml
     RESOURCES
         resources/AppIcons/MainIcon.svg
         resources/TitleBarIcons/minimize.svg

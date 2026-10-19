@@ -7,12 +7,29 @@ Item {
     // 和旧标题栏一样高
     height: 60
 
-    // 深色主题：按钮平时灰，悬停和按下都是白；文字白色；图标用主题蓝
-    readonly property color iconNormal: "#a3a3a6"
-    readonly property color iconHover: "#ffffff"
-    readonly property color iconPress: "#ffffff"
-    readonly property color titleColor: "#ffffff"
+    // 默认深色。浅色、深色的色值沿用旧工程
+    property string themeName: "Dark"
+
+    // 不能标 readonly：ColorAnimation 要逐帧写中间色
+    property color windowColor: themeName === "Light" ? "#f4f5f9" : "#0e162a"
+    property color titleColor: themeName === "Light" ? "#000000" : "#ffffff"
+    property color iconNormal: themeName === "Light" ? "#ACB5C3" : "#a3a3a6"
+    property color iconHover: themeName === "Light" ? "#212C40" : "#ffffff"
+    readonly property color iconPress: iconHover
     readonly property color logoColor: "#19adfa"
+
+    // 颜色自己缓过去，窗口背景绑的就是这个值，所以能看见切换过程
+    Behavior on windowColor { ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+    Behavior on titleColor { ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+    Behavior on iconNormal { ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+    Behavior on iconHover { ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+
+    Binding {
+        target: root.Window.window
+        property: "backgroundColor"
+        value: root.windowColor
+        when: root.Window.window !== null
+    }
     // 只有关闭按钮悬停和按下是红的，避免按下去又闪回白色
     readonly property color closeColor: "#e81123"
 
@@ -74,7 +91,7 @@ Item {
         height: 23
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: closeButton.left
-        anchors.rightMargin: 10
+        anchors.rightMargin: 8
         stateCount: 2
         defaultState: "maximize"
         // 最大化时显示还原图标，窗口状态变了图标跟着变
@@ -119,7 +136,7 @@ Item {
         height: 23
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: windowMode.left
-        anchors.rightMargin: 15
+        anchors.rightMargin: 13
 
         ColorImage {
             anchors.fill: parent
@@ -154,7 +171,7 @@ Item {
         height: 23
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: controlSplit.left
-        anchors.rightMargin: 10
+        anchors.rightMargin: 15
 
         ColorImage {
             anchors.fill: parent
@@ -168,6 +185,17 @@ Item {
             normalColor: root.iconNormal
             hoverColor: root.iconHover
             pressColor: root.iconPress
+            onClicked: themePopup.opened ? themePopup.close() : themePopup.open()
+        }
+
+        ThemePopup {
+            id: themePopup
+            themeName: root.themeName
+            x: (parent.width - width) / 2
+            y: parent.height + 8
+            onThemePicked: function (name) {
+                root.themeName = name
+            }
         }
     }
 
