@@ -10,31 +10,64 @@ Item {
     property var theme: []
     // 配色到齐后再打开动画和窗口，避免启动时从透明色缓一遍
     property bool ready: false
+    // 成功或失败只处理一次，避免错误回调把已经读到的配色盖掉
+    property bool settled: false
 
     Utils { id: utils }
 
+    // 失败也要把窗口放出来，不然进程在跑、屏幕上什么都没有
+    function fail(reason) {
+        if (root.settled)
+            return
+        root.settled = true
+        utils.error(reason)
+        root.ready = true
+    }
+
+    function applyText(text) {
+        var data
+        try {
+            data = JSON.parse(text)
+        } catch (error) {
+            fail("主题文件解析失败：" + error)
+            return
+        }
+        if (!data || !data.theme || data.theme.length === undefined) {
+            fail("主题文件格式不对")
+            return
+        }
+        root.themeCount = data.themeCount
+        root.theme = data.theme
+        if (data.themeCount !== data.theme.length)
+            utils.error("主题数量对不齐：themeCount=" + data.themeCount + "，theme=" + data.theme.length)
+        if (!findTheme(root.current))
+            utils.error("当前主题不存在：" + root.current)
+        root.settled = true
+        Qt.callLater(function() { root.ready = true })
+    }
+
     /**
-     * @brief 读主题文件。qrc 是异步的，先记下数据，下一拍再标记 ready
+     * @brief 读主题文件。读不到或解析失败也要打开窗口，并写明原因
      */
     function load() {
         var xhr = new XMLHttpRequest()
         xhr.open("GET", Qt.resolvedUrl("theme.json"))
+        xhr.onerror = function() {
+            fail("主题文件读不到")
+        }
         xhr.onreadystatechange = function() {
-            if (xhr.readyState !== XMLHttpRequest.DONE)
+            if (xhr.readyState !== XMLHttpRequest.DONE || root.settled)
                 return
             if (!xhr.responseText) {
-                utils.error("主题文件读不到")
-                root.ready = true
+                fail("主题文件读不到")
                 return
             }
-            var data = JSON.parse(xhr.responseText)
-            root.themeCount = data.themeCount
-            root.theme = data.theme
-            if (data.themeCount !== data.theme.length)
-                utils.error("主题数量对不齐：themeCount=" + data.themeCount + "，theme=" + data.theme.length)
-            Qt.callLater(function() { root.ready = true })
+            applyText(xhr.responseText)
         }
         xhr.send()
+        // 本地读取被关掉时，请求停在未发送，回调不会来
+        if (xhr.readyState === XMLHttpRequest.UNSENT)
+            fail("主题文件读不到")
     }
 
     function findTheme(name) {
