@@ -24,6 +24,7 @@ qt_add_qml_module(appquick-media-player
         qml/layouts/CustomComponents/ColorImage.qml
         qml/layouts/CustomComponents/MultiStateItem.qml
         qml/layouts/CustomComponents/MouseStateItem.qml
+        qml/layouts/CustomComponents/Seprator.qml
         qml/layouts/TitleBarLayout/TitleBar.qml
     RESOURCES
         resources/AppIcons/MainIcon.svg
@@ -31,6 +32,8 @@ qt_add_qml_module(appquick-media-player
         resources/TitleBarIcons/maximize.svg
         resources/TitleBarIcons/normalize.svg
         resources/TitleBarIcons/close.svg
+        resources/TitleBarIcons/theme.svg
+        resources/TitleBarIcons/settings.svg
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

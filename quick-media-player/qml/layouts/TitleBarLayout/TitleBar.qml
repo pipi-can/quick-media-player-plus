@@ -136,4 +136,61 @@ Item {
             onClicked: Window.window.showMinimized()
         }
     }
+
+    Seprator {
+        id: controlSplit
+        width: 1
+        height: 15
+        radius: width / 2
+        color: root.iconNormal
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.right: minimizeButton.left
+        anchors.rightMargin: 15
+    }
+
+    Item {
+        id: themeButton
+        width: 23
+        height: 23
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.right: controlSplit.left
+        anchors.rightMargin: 10
+
+        ColorImage {
+            anchors.fill: parent
+            source: "qrc:/quick-media-player/resources/TitleBarIcons/theme.svg"
+            color: themeMouse.color
+        }
+
+        MouseStateItem {
+            id: themeMouse
+            anchors.fill: parent
+            normalColor: root.iconNormal
+            hoverColor: root.iconHover
+            pressColor: root.iconPress
+        }
+    }
+
+    Item {
+        id: settingsButton
+        width: 25
+        height: 25
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.right: themeButton.left
+        anchors.rightMargin: 14
+
+        ColorImage {
+            anchors.fill: parent
+            source: "qrc:/quick-media-player/resources/TitleBarIcons/settings.svg"
+            color: settingsMouse.color
+        }
+
+        MouseStateItem {
+            id: settingsMouse
+            anchors.fill: parent
+            normalColor: root.iconNormal
+            hoverColor: root.iconHover
+            pressColor: root.iconPress
+        }
+    }
 }
