@@ -1,7 +1,12 @@
 import QtQuick
+import "../../utils"
 
 Item {
     id: root
+
+    Utils {
+        id: utils
+    }
 
     // 和 stateInfos、items 一样长，多出来的不参与切换
     property int stateCount: 0
@@ -44,7 +49,6 @@ Item {
         showCurrent()
     }
 
-    // 不加参数类型：编译后的函数调用栈会丢掉调用方行号
     function checkCounts() {
         if (!countsReady)
             return
@@ -52,18 +56,9 @@ Item {
         var itemCount = items.length
         if (stateCount === infoCount && infoCount === itemCount)
             return
-        // 设计预览里没有注册日志单例
-        if (typeof Logger === "undefined")
-            return
-        var caller = new Error().stack.split("\n")[0]
-        var at = caller.lastIndexOf("@")
-        var place = at >= 0 ? caller.slice(at + 1) : "MultiStateItem.qml:0"
-        var colon = place.lastIndexOf(":")
-        Logger.logError(colon >= 0 ? place.slice(0, colon) : place,
-                        colon >= 0 ? parseInt(place.slice(colon + 1)) : 0,
-                        "状态数量对不齐：stateCount=" + stateCount
-                        + "，stateInfos=" + infoCount
-                        + "，items=" + itemCount)
+        utils.error("状态数量对不齐：stateCount=" + stateCount
+                    + "，stateInfos=" + infoCount
+                    + "，items=" + itemCount)
     }
 
     /**
