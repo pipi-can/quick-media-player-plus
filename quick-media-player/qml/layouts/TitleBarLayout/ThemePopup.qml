@@ -8,9 +8,10 @@ Popup {
 
     signal themePicked(string name)
 
-    width: 208
-    height: 132
     padding: 16
+    // 宽高都按内容来，不要写死。写死后多出来的空白会堆在文字下面，上下边距就不一样
+    width: 76 + 16 + 76 + leftPadding + rightPadding
+    height: contentItem.implicitHeight + topPadding + bottomPadding
     modal: true
     focus: true
     // OutsideParent：点按钮本身不算“点到外面”，按钮才能负责开关
@@ -41,8 +42,7 @@ Popup {
         NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 120 }
     }
 
-    Row {
-        anchors.centerIn: parent
+    contentItem: Row {
         spacing: 16
 
         Repeater {
@@ -56,8 +56,10 @@ Popup {
                 required property var modelData
                 readonly property bool selected: root.themeName === modelData.name
 
-                width: 76
-                height: 86
+                implicitWidth: 76
+                implicitHeight: preview.height + caption.anchors.topMargin + caption.implicitHeight
+                width: implicitWidth
+                height: implicitHeight
 
                 Rectangle {
                     id: preview
@@ -91,6 +93,7 @@ Popup {
                 }
 
                 Text {
+                    id: caption
                     anchors.top: preview.bottom
                     anchors.topMargin: 8
                     anchors.horizontalCenter: preview.horizontalCenter
