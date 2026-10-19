@@ -18,16 +18,52 @@ Item {
     // 正在显示的状态名
     property string currentState: ""
 
+    // 三个数量是先后赋上的，创建完成前对不齐不算错误
+    property bool countsReady: false
+
     onCurrentStateChanged: showCurrent()
     onDefaultStateChanged: showCurrent()
-    onStateCountChanged: showCurrent()
-    onStateInfosChanged: showCurrent()
-    onItemsChanged: showCurrent()
+    onStateCountChanged: {
+        checkCounts()
+        showCurrent()
+    }
+    onStateInfosChanged: {
+        checkCounts()
+        showCurrent()
+    }
+    onItemsChanged: {
+        checkCounts()
+        showCurrent()
+    }
 
     Component.onCompleted: {
+        countsReady = true
+        checkCounts()
         if (currentState === "")
             currentState = defaultState
         showCurrent()
+    }
+
+    // 不加参数类型：编译后的函数调用栈会丢掉调用方行号
+    function checkCounts() {
+        if (!countsReady)
+            return
+        var infoCount = stateInfos.length
+        var itemCount = items.length
+        if (stateCount === infoCount && infoCount === itemCount)
+            return
+        // 设计预览里没有注册日志单例
+        if (typeof Logger === "undefined")
+            return
+        var caller = new Error().stack.split("\n")[0]
+        var at = caller.lastIndexOf("@")
+        var place = at >= 0 ? caller.slice(at + 1) : "MultiStateItem.qml:0"
+        var colon = place.lastIndexOf(":")
+        Logger.logError(colon >= 0 ? place.slice(0, colon) : place,
+                        colon >= 0 ? parseInt(place.slice(colon + 1)) : 0,
+                        "状态数量对不齐：stateCount=" + stateCount
+                        + "，stateInfos=" + infoCount
+                        + "，items=" + itemCount)
     }
 
     /**

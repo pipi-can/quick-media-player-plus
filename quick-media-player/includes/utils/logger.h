@@ -46,6 +46,9 @@ public:
 
     Q_INVOKABLE void log(Level level, const QString &file, int line, const QString &message);
 
+    // QML 通过上下文属性拿不到枚举值，错误等级单独留这个入口
+    Q_INVOKABLE void logError(const QString &file, int line, const QString &message);
+
 signals:
     void logLevelChanged();
 
