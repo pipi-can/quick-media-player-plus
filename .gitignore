@@ -5,3 +5,7 @@ __pycache__/
 *.pyc
 quick-media-player/libs/
 .vscode/
+# 本机语言服务配置，不进仓库
+.clangd
+.qmlls.ini
+.cache/
