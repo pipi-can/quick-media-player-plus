@@ -202,10 +202,17 @@ Item {
         anchors.right: controlSplit.left
         anchors.rightMargin: 15
 
-        ColorImage {
+        Item {
             anchors.fill: parent
-            source: "qrc:/quick-media-player/resources/TitleBarIcons/theme.svg"
-            color: themeMouse.color
+            transformOrigin: Item.Center
+            scale: themeMouse.containsMouse ? 1 : 0.9
+            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+            ColorImage {
+                anchors.fill: parent
+                source: "qrc:/quick-media-player/resources/TitleBarIcons/theme.svg"
+                color: themeMouse.color
+            }
         }
 
         MouseStateItem {
@@ -233,10 +240,24 @@ Item {
         anchors.right: themeButton.left
         anchors.rightMargin: 14
 
-        ColorImage {
+        Item {
+            id: settingsIcon
+            // 进入和离开各加一圈。读 rotation 会读到动画中的角度，所以用 spin 累加
+            property real spin: 0
             anchors.fill: parent
-            source: "qrc:/quick-media-player/resources/TitleBarIcons/settings.svg"
-            color: settingsMouse.color
+            transformOrigin: Item.Center
+            scale: settingsMouse.containsMouse ? 1 : 0.9
+            rotation: spin
+            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+            Behavior on rotation {
+                RotationAnimation { duration: 400; direction: RotationAnimation.Clockwise }
+            }
+
+            ColorImage {
+                anchors.fill: parent
+                source: "qrc:/quick-media-player/resources/TitleBarIcons/settings.svg"
+                color: settingsMouse.color
+            }
         }
 
         MouseStateItem {
@@ -245,6 +266,7 @@ Item {
             normalColor: root.iconNormal
             hoverColor: root.iconHover
             pressColor: root.iconPress
+            onContainsMouseChanged: settingsIcon.spin += 360
         }
     }
 }
