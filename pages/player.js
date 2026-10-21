@@ -180,6 +180,112 @@
     }
   });
 
+  const videoQueue = document.getElementById("videoQueue");
+  const fileName = document.getElementById("fileName");
+  const fileRows = document.getElementById("fileRows");
+  const fileFields = [
+    ["路径", "path"],
+    ["格式", "format"],
+    ["分辨率", "resolution"],
+    ["视频编码", "codec"],
+    ["解码器", "decoder"],
+    ["音频", "audio"],
+    ["大小", "size"]
+  ];
+  let videoDrag = null;
+
+  function showFile(item) {
+    fileName.textContent = item.dataset.file;
+    fileRows.innerHTML = "";
+    fileFields.forEach(function (field) {
+      const row = document.createElement("div");
+      row.className = "file-row";
+      const label = document.createElement("span");
+      label.textContent = field[0];
+      const value = document.createElement("span");
+      value.textContent = item.dataset[field[1]];
+      row.appendChild(label);
+      row.appendChild(value);
+      fileRows.appendChild(row);
+    });
+  }
+
+  function selectVideo(item) {
+    videoQueue.querySelectorAll(".q-item").forEach(function (el) {
+      el.classList.toggle("is-on", el === item);
+    });
+    showFile(item);
+  }
+
+  videoQueue.addEventListener("pointerdown", function (event) {
+    const item = event.target.closest(".q-item");
+    if (!item) {
+      return;
+    }
+    videoDrag = {
+      item: item,
+      startY: event.clientY,
+      origin: item.offsetTop,
+      moved: false,
+      pointerId: event.pointerId
+    };
+    item.setPointerCapture(event.pointerId);
+  });
+
+  videoQueue.addEventListener("pointermove", function (event) {
+    if (!videoDrag || videoDrag.pointerId !== event.pointerId) {
+      return;
+    }
+    const dy = event.clientY - videoDrag.startY;
+    if (Math.abs(dy) > 6) {
+      videoDrag.moved = true;
+    }
+    if (!videoDrag.moved) {
+      return;
+    }
+    videoDrag.item.classList.add("is-dragging");
+    let ghost = videoQueue.querySelector(".q-ghost");
+    if (!ghost) {
+      ghost = document.createElement("div");
+      ghost.className = "q-ghost";
+      ghost.textContent = videoDrag.item.querySelector(".q-title").textContent;
+      videoQueue.appendChild(ghost);
+    }
+    ghost.style.top = (videoDrag.origin + dy) + "px";
+  });
+
+  videoQueue.addEventListener("pointerup", function (event) {
+    if (!videoDrag || videoDrag.pointerId !== event.pointerId) {
+      return;
+    }
+    const item = videoDrag.item;
+    const moved = videoDrag.moved;
+    const ghost = videoQueue.querySelector(".q-ghost");
+    const top = ghost ? parseFloat(ghost.style.top) : item.offsetTop;
+    if (ghost) {
+      ghost.remove();
+    }
+    item.classList.remove("is-dragging");
+    videoDrag = null;
+    if (moved) {
+      const items = Array.prototype.slice.call(videoQueue.querySelectorAll(".q-item"));
+      let dest = Math.round(top / (item.offsetHeight + 4));
+      if (dest < 0) {
+        dest = 0;
+      }
+      if (dest >= items.length) {
+        dest = items.length - 1;
+      }
+      const from = items.indexOf(item);
+      if (from !== dest) {
+        const after = dest > from ? items[dest].nextSibling : items[dest];
+        videoQueue.insertBefore(item, after);
+      }
+    }
+    selectVideo(item);
+  });
+
   applyTheme("light");
   renderVolume();
+  showFile(videoQueue.querySelector(".q-item.is-on"));
 })();
