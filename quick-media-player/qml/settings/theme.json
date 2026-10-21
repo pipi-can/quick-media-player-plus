@@ -24,6 +24,7 @@
             "progressNormal": "rgba(80, 80, 80, 1)",
             "popupHover": "rgba(28, 43, 84, 1)",
             "queueItemOn": "rgba(23, 44, 94, 1)",
+            "queueItemHover": "rgba(18, 34, 68, 1)",
             "queueItemBorder": "rgba(29, 57, 117, 1)",
             "videoThumb": "rgba(17, 17, 17, 1)",
             "videoThumbIcon": "rgba(255, 255, 255, 1)"
@@ -51,6 +52,7 @@
             "progressNormal": "rgba(172, 181, 195, 1)",
             "popupHover": "rgba(194, 198, 207, 1)",
             "queueItemOn": "rgba(167, 196, 253, 1)",
+            "queueItemHover": "rgba(214, 226, 252, 1)",
             "queueItemBorder": "rgba(150, 161, 237, 1)",
             "videoThumb": "rgba(17, 17, 17, 1)",
             "videoThumbIcon": "rgba(255, 255, 255, 1)"
