@@ -76,10 +76,18 @@ Item {
         anchors.right: parent.right
         anchors.rightMargin: 10
 
-        ColorImage {
+        Item {
             anchors.fill: parent
-            source: "qrc:/quick-media-player/resources/TitleBarIcons/close.svg"
-            color: closeMouse.color
+            // 平时 90%，悬停放到 100%。从中心缩，图标才不会往左上角飘
+            transformOrigin: Item.Center
+            scale: closeMouse.containsMouse ? 1 : 0.9
+            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+            ColorImage {
+                anchors.fill: parent
+                source: "qrc:/quick-media-player/resources/TitleBarIcons/close.svg"
+                color: closeMouse.color
+            }
         }
 
         MouseStateItem {
@@ -109,17 +117,24 @@ Item {
         ]
         items: [ maximizeIcon, normalizeIcon ]
 
-        ColorImage {
-            id: maximizeIcon
+        Item {
             anchors.fill: parent
-            source: "qrc:/quick-media-player/resources/TitleBarIcons/maximize.svg"
-            color: windowMouse.color
-        }
-        ColorImage {
-            id: normalizeIcon
-            anchors.fill: parent
-            source: "qrc:/quick-media-player/resources/TitleBarIcons/normalize.svg"
-            color: windowMouse.color
+            transformOrigin: Item.Center
+            scale: windowMouse.containsMouse ? 1 : 0.9
+            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+            ColorImage {
+                id: maximizeIcon
+                anchors.fill: parent
+                source: "qrc:/quick-media-player/resources/TitleBarIcons/maximize.svg"
+                color: windowMouse.color
+            }
+            ColorImage {
+                id: normalizeIcon
+                anchors.fill: parent
+                source: "qrc:/quick-media-player/resources/TitleBarIcons/normalize.svg"
+                color: windowMouse.color
+            }
         }
 
         MouseStateItem {
@@ -145,10 +160,17 @@ Item {
         anchors.right: windowMode.left
         anchors.rightMargin: 13
 
-        ColorImage {
+        Item {
             anchors.fill: parent
-            source: "qrc:/quick-media-player/resources/TitleBarIcons/minimize.svg"
-            color: minimizeMouse.color
+            transformOrigin: Item.Center
+            scale: minimizeMouse.containsMouse ? 1 : 0.9
+            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+            ColorImage {
+                anchors.fill: parent
+                source: "qrc:/quick-media-player/resources/TitleBarIcons/minimize.svg"
+                color: minimizeMouse.color
+            }
         }
 
         MouseStateItem {
