@@ -26,6 +26,7 @@ qt_add_qml_module(appquick-media-player
         qml/layouts/CustomComponents/MouseStateItem.qml
         qml/layouts/CustomComponents/Seprator.qml
         qml/layouts/TitleBarLayout/TitleBar.qml
+        qml/layouts/TitleBarLayout/NavigatorBar.qml
         qml/layouts/TitleBarLayout/ThemePopup.qml
         qml/settings/Theme.qml
     RESOURCES

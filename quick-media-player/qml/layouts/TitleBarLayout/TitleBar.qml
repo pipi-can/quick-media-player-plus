@@ -68,6 +68,12 @@ Item {
         font.bold: true
     }
 
+    NavigatorBar {
+        theme: root.theme
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+    }
+
     Item {
         id: closeButton
         width: 30
