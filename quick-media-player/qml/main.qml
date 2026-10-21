@@ -25,5 +25,10 @@ FramelessWindow {
         anchors.right: parent.right
     }
 
-    Component.onCompleted: utils.debug("qml logger ready")
+    Component.onCompleted: {
+        // 只放一次。绑在屏幕尺寸上的话，拖动窗口会被拉回正中
+        x = (screen.width - width) / 2
+        y = (screen.height - height) / 2
+        utils.debug("qml logger ready")
+    }
 }

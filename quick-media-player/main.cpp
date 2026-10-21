@@ -1,4 +1,5 @@
 #include <QGuiApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QtQml>
@@ -14,6 +15,12 @@ int main(int argc, char *argv[])
 
     Logger::getInstance().setLogLevel(Logger::Debug);
     LOG_DEBUG("logger ready");
+
+    // 任务栏图标和标题栏「QMediaPlayer」左侧是同一个资源
+    const QIcon windowIcon(QStringLiteral(":/quick-media-player/resources/AppIcons/MainIcon.svg"));
+    if (windowIcon.isNull())
+        LOG_ERROR("窗口图标资源打不开");
+    app.setWindowIcon(windowIcon);
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty(QStringLiteral("Logger"), &Logger::getInstance());
