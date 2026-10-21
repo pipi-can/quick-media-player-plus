@@ -10,6 +10,8 @@ int main(int argc, char *argv[])
 {
     // Qt 默认禁止 QML 读取 qrc 里的 json，主题配色打不开这个开关
     qputenv("QML_XHR_ALLOW_FILE_READ", "1");
+    // Windows 自带样式不许改 Slider 的轨道和圆点，要在创建应用之前换成 Basic
+    qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
 
     QGuiApplication app(argc, argv);
 
