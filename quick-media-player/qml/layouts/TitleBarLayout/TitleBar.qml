@@ -9,6 +9,7 @@ Item {
     height: 60
 
     property Theme theme: null
+    property alias currentPage: navigatorBar.currentPage
 
     // 不能标 readonly：ColorAnimation 要逐帧写中间色
     property color windowColor: paint("windowNormal")
@@ -69,6 +70,7 @@ Item {
     }
 
     NavigatorBar {
+        id: navigatorBar
         theme: root.theme
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter

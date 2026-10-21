@@ -1,6 +1,7 @@
 import QtQuick
 import "./layouts"
 import "./layouts/TitleBarLayout"
+import "./layouts/ContentLayout"
 import "./settings"
 import "./utils"
 
@@ -19,10 +20,19 @@ FramelessWindow {
     }
 
     TitleBar {
+        id: titleBar
         theme: theme
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
+    }
+
+    ContentWidget {
+        anchors.top: titleBar.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        currentPage: titleBar.currentPage
     }
 
     Component.onCompleted: {
