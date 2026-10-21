@@ -44,6 +44,10 @@ qt_add_qml_module(appquick-media-player
         resources/TitleBarIcons/close.svg
         resources/TitleBarIcons/theme.svg
         resources/TitleBarIcons/settings.svg
+        resources/PlayWidgetIcons/play.svg
+        resources/PlayWidgetIcons/lastone.svg
+        resources/PlayWidgetIcons/nextone.svg
+        resources/PlayWidgetIcons/add.svg
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
