@@ -1,20 +1,22 @@
 :root {
   --accent: #19adfa;
-  --text: #000000;
+  --text: #1c2633;
   --utext: #ffffff;
-  --bg: #f4f5f9;
-  --stage: #ffffff;
-  --muted: #81a0b0;
-  --btn: #acb5c3;
-  --btn-hover: #212c40;
-  --item: #f9f9f9;
-  --item-on: #a7c4fd;
-  --item-hover: #d6e2fc;
-  --item-bd: #96a1ed;
-  --progress: #acb5c3;
+  --bg: #e6eef5;
+  --stage: #121a24;
+  --stage-ink: #d5dee8;
+  --stage-bd: #243140;
+  --muted: #5d7082;
+  --btn: #5e7184;
+  --btn-hover: #1c2633;
+  --item: #ffffff;
+  --item-on: #c9ecfd;
+  --item-hover: #e7f6fe;
+  --item-bd: #7dcef6;
+  --progress: #b9c7d4;
   --pop: #ffffff;
-  --pop-hover: #c2c6cf;
-  --pop-bd: #afb2ba;
+  --pop-hover: #e3f4fd;
+  --pop-bd: #c9d5e0;
 }
 
 html[data-theme="dark"] {
@@ -22,6 +24,8 @@ html[data-theme="dark"] {
   --utext: #000000;
   --bg: #0e162a;
   --stage: #000000;
+  --stage-ink: #7f9dad;
+  --stage-bd: #2c4485;
   --muted: #7f9dad;
   --btn: #a3a3a6;
   --btn-hover: #ffffff;
@@ -188,24 +192,34 @@ body {
   min-height: 0;
   display: grid;
   place-items: center;
-  padding: 24px;
   container-type: size;
 }
 
+/* 空白区里先放下最大的 16:9，没在播时只取它的 0.618 */
 .screen {
-  width: min(640px, 100cqw, calc(100cqh * 16 / 9));
+  width: min(calc(100cqw * 0.618), calc(100cqh * 16 / 9 * 0.618));
   aspect-ratio: 16 / 9;
+  transition: width 0.28s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 14px;
   padding: 0 24px;
-  border: 1px solid var(--pop-bd);
+  border: 1px solid var(--stage-bd);
   border-radius: 6px;
   background: var(--stage);
-  color: var(--muted);
+  color: var(--stage-ink);
   text-align: center;
+}
+
+.screen.is-playing {
+  width: min(100cqw, calc(100cqh * 16 / 9));
+}
+
+.screen.is-playing .icon,
+.screen.is-playing p {
+  display: none;
 }
 
 .screen .icon { width: 36px; height: 36px; }
@@ -483,19 +497,53 @@ body {
 
 .file-card {
   flex: none;
-  margin-top: 10px;
-  padding: 10px;
-  border: 1px solid var(--pop-bd);
-  border-radius: 6px;
-  background: var(--pop);
+  margin-top: 8px;
+  padding: 2px 2px 0;
+}
+
+.file-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .file-name {
-  margin: 0 0 4px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
   overflow: hidden;
   font-weight: 700;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.file-brief {
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.file-more {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.file-rows {
+  display: none;
+  margin-top: 6px;
+}
+
+.file-card.is-open .file-rows {
+  display: block;
 }
 
 .file-row {

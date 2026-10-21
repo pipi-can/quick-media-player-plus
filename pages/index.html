@@ -67,7 +67,7 @@
           <input class="seek" type="range" min="0" max="100" value="18">
           <div class="ctrl-row">
             <button type="button" class="ico"><svg class="icon"><use href="#i-prev"></use></svg></button>
-            <button type="button" class="ico"><svg class="icon"><use href="#i-play"></use></svg></button>
+            <button type="button" class="ico" id="videoPlay"><svg class="icon"><use href="#i-play"></use></svg></button>
             <button type="button" class="ico"><svg class="icon"><use href="#i-next"></use></svg></button>
             <span class="time">00:07 / 05:27</span>
             <span class="grow"></span>
@@ -127,8 +127,12 @@
           </li>
         </ul>
         <div class="file-card" id="fileCard">
-          <p class="file-name" id="fileName"></p>
-          <div id="fileRows"></div>
+          <div class="file-head">
+            <p class="file-name" id="fileName"></p>
+            <button type="button" class="file-more" id="fileMore">详情</button>
+          </div>
+          <p class="file-brief" id="fileBrief"></p>
+          <div class="file-rows" id="fileRows"></div>
         </div>
       </aside>
     </section>

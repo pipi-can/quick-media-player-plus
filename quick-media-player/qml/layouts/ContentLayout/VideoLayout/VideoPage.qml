@@ -15,13 +15,16 @@ Item {
     property bool speedOpen: false
     property bool volOpen: false
     property int queueIndex: 0
+    // 还没接解码。点播放只切换这块画面的大小
+    property bool playing: false
+    property bool detailOpen: false
     property int dragFrom: -1
     property real dragGhostY: 0
     property real dragRowY: 0
     property real dragPressY: 0
     property color stageColor: paint("stageNormal")
     property color wellColor: paint("windowNormal")
-    property color screenEdge: paint("popupBorder")
+    property color screenEdge: paint("stageBorder")
 
     Behavior on stageColor {
         enabled: theme && theme.ready
@@ -129,19 +132,19 @@ Item {
             color: root.wellColor
         }
 
-        // 没片子时黑只留在这块 16:9 里，旁边用窗口色，避免一整面空黑
+        // 空白区是控制条以上。画面保持 16:9，空着只占这块能放下的 0.618
         Item {
+            id: blank
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.bottom: controls.top
-            anchors.margins: 24
 
             Rectangle {
                 id: screen
                 anchors.centerIn: parent
-                // 空的时候不要铺满，留一圈窗口色，黑才像一块屏幕
-                width: Math.min(parent.width, parent.height * 16 / 9, 640)
+                readonly property real fitWidth: Math.min(blank.width, blank.height * 16 / 9)
+                width: fitWidth * (root.playing ? 1 : 0.618)
                 height: width * 9 / 16
                 radius: 6
                 color: root.stageColor
@@ -149,9 +152,10 @@ Item {
                 border.color: root.screenEdge
 
                 Column {
+                    visible: !root.playing
                     anchors.centerIn: parent
                     spacing: 14
-                    width: parent.width - 48
+                    width: Math.max(0, parent.width - 48)
 
                     ColorImage {
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -166,7 +170,7 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         text: "拖入视频，或点右侧加号加入队列"
                         font.pixelSize: 13
-                        color: root.paint("navTextNormal")
+                        color: root.paint("stageText")
                         wrapMode: Text.WordWrap
                     }
                 }
@@ -228,7 +232,10 @@ Item {
                     source: "qrc:/quick-media-player/resources/PlayWidgetIcons/lastone.svg"
                 }
                 IconButton {
-                    source: "qrc:/quick-media-player/resources/PlayWidgetIcons/play.svg"
+                    source: root.playing
+                           ? "qrc:/quick-media-player/resources/PlayWidgetIcons/pause.svg"
+                           : "qrc:/quick-media-player/resources/PlayWidgetIcons/play.svg"
+                    onClicked: root.playing = !root.playing
                 }
                 IconButton {
                     source: "qrc:/quick-media-player/resources/PlayWidgetIcons/nextone.svg"
@@ -594,65 +601,100 @@ Item {
             }
         }
 
-        Rectangle {
+        Item {
             id: fileCard
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            radius: 6
-            color: root.paint("popupNormal")
-            border.width: 1
-            border.color: root.paint("popupBorder")
-            height: fileCol.height + 20
+            height: fileCol.height
 
             Column {
                 id: fileCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 10
+                width: parent.width
                 spacing: 4
 
-                Text {
+                Item {
                     width: parent.width
-                    text: root.fileField("file")
-                    elide: Text.ElideMiddle
-                    font.pixelSize: 13
-                    font.bold: true
-                    color: root.paint("titleNormal")
-                }
+                    height: 18
 
-                Repeater {
-                    model: [
-                        { name: "路径", key: "path" },
-                        { name: "格式", key: "format" },
-                        { name: "分辨率", key: "resolution" },
-                        { name: "视频编码", key: "codec" },
-                        { name: "解码器", key: "decoder" },
-                        { name: "音频", key: "audio" },
-                        { name: "大小", key: "size" }
-                    ]
+                    Text {
+                        anchors.left: parent.left
+                        anchors.right: detailHit.left
+                        anchors.rightMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: root.fileField("file")
+                        elide: Text.ElideMiddle
+                        font.pixelSize: 13
+                        font.bold: true
+                        color: root.paint("titleNormal")
+                    }
 
-                    delegate: Item {
-                        width: fileCol.width
+                    Item {
+                        id: detailHit
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: detailText.implicitWidth
                         height: 18
 
                         Text {
-                            width: 60
-                            text: modelData.name
-                            font.pixelSize: 12
-                            color: root.paint("navTextNormal")
+                            id: detailText
                             anchors.verticalCenter: parent.verticalCenter
+                            text: root.detailOpen ? "收起" : "详情"
+                            font.pixelSize: 12
+                            font.bold: true
+                            color: root.paint("logoNormal")
                         }
 
-                        Text {
-                            x: 60
-                            width: parent.width - 60
-                            text: root.fileField(modelData.key)
-                            elide: modelData.key === "path" ? Text.ElideMiddle : Text.ElideRight
-                            font.pixelSize: 12
-                            color: root.paint("titleNormal")
-                            anchors.verticalCenter: parent.verticalCenter
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.detailOpen = !root.detailOpen
+                        }
+                    }
+                }
+
+                Text {
+                    width: parent.width
+                    text: root.fileField("format") + " · " + root.fileField("resolution") + " · " + root.fileField("size")
+                    elide: Text.ElideRight
+                    font.pixelSize: 12
+                    color: root.paint("navTextNormal")
+                }
+
+                Column {
+                    visible: root.detailOpen
+                    width: parent.width
+                    spacing: 4
+
+                    Repeater {
+                        model: [
+                            { name: "路径", key: "path" },
+                            { name: "视频编码", key: "codec" },
+                            { name: "解码器", key: "decoder" },
+                            { name: "音频", key: "audio" }
+                        ]
+
+                        delegate: Item {
+                            width: fileCol.width
+                            height: 18
+
+                            Text {
+                                width: 60
+                                text: modelData.name
+                                font.pixelSize: 12
+                                color: root.paint("navTextNormal")
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Text {
+                                x: 60
+                                width: parent.width - 60
+                                text: root.fileField(modelData.key)
+                                elide: modelData.key === "path" ? Text.ElideMiddle : Text.ElideRight
+                                font.pixelSize: 12
+                                color: root.paint("titleNormal")
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
                         }
                     }
                 }
@@ -663,6 +705,7 @@ Item {
     component IconButton: Item {
         id: button
         property alias source: icon.source
+        signal clicked()
         width: 28
         height: 28
 
@@ -680,6 +723,7 @@ Item {
             normalColor: root.paint("iconNormal")
             hoverColor: root.paint("iconHover")
             pressColor: root.paint("iconPress")
+            onClicked: button.clicked()
         }
     }
 

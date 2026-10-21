@@ -181,21 +181,22 @@
   });
 
   const videoQueue = document.getElementById("videoQueue");
+  const fileCard = document.getElementById("fileCard");
   const fileName = document.getElementById("fileName");
+  const fileBrief = document.getElementById("fileBrief");
+  const fileMore = document.getElementById("fileMore");
   const fileRows = document.getElementById("fileRows");
   const fileFields = [
     ["路径", "path"],
-    ["格式", "format"],
-    ["分辨率", "resolution"],
     ["视频编码", "codec"],
     ["解码器", "decoder"],
-    ["音频", "audio"],
-    ["大小", "size"]
+    ["音频", "audio"]
   ];
   let videoDrag = null;
 
   function showFile(item) {
     fileName.textContent = item.dataset.file;
+    fileBrief.textContent = item.dataset.format + " · " + item.dataset.resolution + " · " + item.dataset.size;
     fileRows.innerHTML = "";
     fileFields.forEach(function (field) {
       const row = document.createElement("div");
@@ -209,6 +210,11 @@
       fileRows.appendChild(row);
     });
   }
+
+  fileMore.addEventListener("click", function () {
+    const open = fileCard.classList.toggle("is-open");
+    fileMore.textContent = open ? "收起" : "详情";
+  });
 
   function selectVideo(item) {
     videoQueue.querySelectorAll(".q-item").forEach(function (el) {
@@ -283,6 +289,13 @@
       }
     }
     selectVideo(item);
+  });
+
+  const videoPlay = document.getElementById("videoPlay");
+  const videoScreen = document.querySelector("#page-video .screen");
+  videoPlay.addEventListener("click", function () {
+    const on = videoScreen.classList.toggle("is-playing");
+    videoPlay.querySelector("use").setAttribute("href", on ? "#i-pause" : "#i-play");
   });
 
   applyTheme("light");
