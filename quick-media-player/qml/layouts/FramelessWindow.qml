@@ -5,11 +5,10 @@ Window {
 
     default property alias contentData: contentHost.data
 
-    // 1920×1080 上原来是 920×600，其它分辨率按同样比例缩放
-    readonly property real widthRatio: 920 / 1920
-    readonly property real heightRatio: 600 / 1080
-    minimumWidth: Math.round(screen.width * widthRatio)
-    minimumHeight: Math.round(screen.height * heightRatio)
+    // 最小宽高都取当前屏幕的 75%
+    readonly property real sizeRatio: 0.75
+    minimumWidth: Math.round(screen.width * sizeRatio)
+    minimumHeight: Math.round(screen.height * sizeRatio)
     width: minimumWidth
     height: minimumHeight
     visible: true
