@@ -250,7 +250,7 @@ Item {
             rotation: spin
             Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
             Behavior on rotation {
-                RotationAnimation { duration: 400; direction: RotationAnimation.Clockwise }
+                RotationAnimation { duration: 200; direction: RotationAnimation.Clockwise }
             }
 
             ColorImage {
