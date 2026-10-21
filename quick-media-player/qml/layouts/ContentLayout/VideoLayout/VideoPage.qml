@@ -16,8 +16,18 @@ Item {
     property bool volOpen: false
     property int queueIndex: 0
     property color stageColor: paint("stageNormal")
+    property color wellColor: paint("windowNormal")
+    property color screenEdge: paint("popupBorder")
 
     Behavior on stageColor {
+        enabled: theme && theme.ready
+        ColorAnimation { duration: 560; easing.type: Easing.InOutCubic }
+    }
+    Behavior on wellColor {
+        enabled: theme && theme.ready
+        ColorAnimation { duration: 560; easing.type: Easing.InOutCubic }
+    }
+    Behavior on screenEdge {
         enabled: theme && theme.ready
         ColorAnimation { duration: 560; easing.type: Easing.InOutCubic }
     }
@@ -61,17 +71,55 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: 5
-            color: root.stageColor
+            color: root.wellColor
         }
 
-        Text {
-            anchors.centerIn: parent
-            text: "拖入视频，或点右侧加号加入队列"
-            font.pixelSize: 13
-            color: root.paint("navTextNormal")
+        // 没片子时黑只留在这块 16:9 里，旁边用窗口色，避免一整面空黑
+        Item {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: controls.top
+            anchors.margins: 24
+
+            Rectangle {
+                id: screen
+                anchors.centerIn: parent
+                // 空的时候不要铺满，留一圈窗口色，黑才像一块屏幕
+                width: Math.min(parent.width, parent.height * 16 / 9, 640)
+                height: width * 9 / 16
+                radius: 6
+                color: root.stageColor
+                border.width: 1
+                border.color: root.screenEdge
+
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 14
+                    width: parent.width - 48
+
+                    ColorImage {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: 36
+                        height: 36
+                        source: "qrc:/quick-media-player/resources/PlayWidgetIcons/play.svg"
+                        color: root.paint("logoNormal")
+                    }
+
+                    Text {
+                        width: parent.width
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "拖入视频，或点右侧加号加入队列"
+                        font.pixelSize: 13
+                        color: root.paint("navTextNormal")
+                        wrapMode: Text.WordWrap
+                    }
+                }
+            }
         }
 
         Item {
+            id: controls
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
