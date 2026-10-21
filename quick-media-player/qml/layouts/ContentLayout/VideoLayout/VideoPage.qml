@@ -15,6 +15,10 @@ Item {
     property bool speedOpen: false
     property bool volOpen: false
     property int queueIndex: 0
+    property int dragFrom: -1
+    property real dragGhostY: 0
+    property real dragRowY: 0
+    property real dragPressY: 0
     property color stageColor: paint("stageNormal")
     property color wellColor: paint("windowNormal")
     property color screenEdge: paint("popupBorder")
@@ -42,6 +46,16 @@ Item {
         modeOpen = false
         speedOpen = false
         volOpen = false
+    }
+
+    // to 用的是这条最终要落在的位置
+    function moveQueue(from, to) {
+        if (from === to || from < 0 || to < 0)
+            return
+        if (from >= queueModel.count || to >= queueModel.count)
+            return
+        queueModel.move(from, to, 1)
+        queueIndex = to
     }
 
     // 队列点中的那一条。字段是样子，等以后用真实媒体信息换
@@ -454,10 +468,13 @@ Item {
                     model: queueModel
 
                     delegate: Item {
+                        id: row
                         width: queueCol.width
                         height: 58
                         // 选中盖过悬停，两块蓝才分得开
                         readonly property bool selected: index === root.queueIndex
+                        property bool dragged: false
+                        opacity: root.dragFrom === index ? 0.35 : 1
 
                         Rectangle {
                             anchors.fill: parent
@@ -509,12 +526,70 @@ Item {
                         MouseStateItem {
                             id: rowMouse
                             anchors.fill: parent
+                            preventStealing: true
                             normalColor: "transparent"
                             hoverColor: "transparent"
                             pressColor: "transparent"
-                            onClicked: root.queueIndex = index
+                            onPressed: function (mouse) {
+                                root.dragFrom = index
+                                root.dragRowY = row.y
+                                root.dragPressY = row.mapToItem(queueCol, mouse.x, mouse.y).y
+                                root.dragGhostY = row.y
+                                row.dragged = false
+                            }
+                            onPositionChanged: function (mouse) {
+                                if (root.dragFrom !== index)
+                                    return
+                                var y = row.mapToItem(queueCol, mouse.x, mouse.y).y
+                                root.dragGhostY = root.dragRowY + (y - root.dragPressY)
+                                if (Math.abs(root.dragGhostY - root.dragRowY) > 6)
+                                    row.dragged = true
+                            }
+                            onReleased: {
+                                var from = root.dragFrom
+                                var moved = row.dragged
+                                root.dragFrom = -1
+                                if (!moved || from !== index)
+                                    return
+                                var dest = Math.round(root.dragGhostY / (row.height + queueCol.spacing))
+                                if (dest < 0)
+                                    dest = 0
+                                if (dest >= queueModel.count)
+                                    dest = queueModel.count - 1
+                                root.moveQueue(from, dest)
+                            }
+                            onClicked: {
+                                if (row.dragged) {
+                                    row.dragged = false
+                                    return
+                                }
+                                root.queueIndex = index
+                            }
                         }
                     }
+                }
+            }
+
+            Rectangle {
+                visible: root.dragFrom >= 0
+                x: 0
+                y: root.dragGhostY
+                z: 3
+                width: queueCol.width
+                height: 58
+                radius: 6
+                color: root.paint("queueItemOn")
+                border.width: 1
+                border.color: root.paint("logoNormal")
+
+                Text {
+                    x: 58
+                    width: parent.width - 70
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.dragFrom >= 0 ? queueModel.get(root.dragFrom).title : ""
+                    elide: Text.ElideRight
+                    font.pixelSize: 13
+                    color: root.paint("titleNormal")
                 }
             }
         }
