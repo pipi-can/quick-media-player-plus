@@ -9,3 +9,4 @@ quick-media-player/libs/
 .clangd
 .qmlls.ini
 .cache/
+tools/
