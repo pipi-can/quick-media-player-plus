@@ -10,14 +10,15 @@
 - g++
 - Qt 6，并且装有 Quick、Core5Compat。本机装在 `/home/Qt/6.5.3/gcc_64`
 
-在仓库根目录执行 `build.sh`。参数是 Qt 的 `gcc_64` 目录，构建目录固定为仓库根下的 `build/`。
+在仓库根目录用 `build.sh`。`--build` 后面跟 Qt 的 `gcc_64` 目录，构建目录固定为仓库根下的 `build/`。`--run` 运行已经编好的程序。
 
 ```bash
 chmod +x build.sh
-./build.sh /home/Qt/6.5.3/gcc_64
+./build.sh --build /home/Qt/6.5.3/gcc_64
+./build.sh --run
 ```
 
-脚本会依次执行：
+`--build` 会依次执行：
 
 ```bash
 cmake -S quick-media-player -B build \
@@ -27,8 +28,4 @@ cmake --build build
 
 `CMAKE_PREFIX_PATH` 用来告诉 CMake 去哪找 Qt 6。系统自带的 qmake 是 Qt 5，不传这个目录会找不到 Qt 6。
 
-编好的程序是 `build/appquick-media-player`。在仓库根目录运行：
-
-```bash
-./build/appquick-media-player
-```
+编好的程序是 `build/appquick-media-player`。还没编译就执行 `--run` 时，脚本会提示先编译。参数不对时，脚本会打印用法。
