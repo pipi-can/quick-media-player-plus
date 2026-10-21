@@ -44,11 +44,52 @@ Item {
         volOpen = false
     }
 
+    // 队列点中的那一条。字段是样子，等以后用真实媒体信息换
+    function fileField(key) {
+        if (queueIndex < 0 || queueIndex >= queueModel.count)
+            return ""
+        var value = queueModel.get(queueIndex)[key]
+        return value === undefined ? "" : value
+    }
+
     ListModel {
         id: queueModel
-        ListElement { title: "播放中：灰色轨迹"; length: "03:24" }
-        ListElement { title: "1120415067-1-20808"; length: "05:01" }
-        ListElement { title: "125082522_da3-1-16"; length: "03:29" }
+        ListElement {
+            title: "播放中：灰色轨迹"
+            length: "03:24"
+            file: "灰色轨迹.mp4"
+            path: "/home/video/灰色轨迹.mp4"
+            format: "MP4"
+            resolution: "1920×1080"
+            codec: "H.264"
+            decoder: "软解"
+            audio: "AAC · 48 kHz"
+            size: "86.4 MB"
+        }
+        ListElement {
+            title: "1120415067-1-20808"
+            length: "05:01"
+            file: "1120415067-1-20808.mkv"
+            path: "/data/inbox/1120415067-1-20808.mkv"
+            format: "MKV"
+            resolution: "1280×720"
+            codec: "H.265"
+            decoder: "VAAPI 硬解"
+            audio: "AAC · 立体声"
+            size: "214 MB"
+        }
+        ListElement {
+            title: "125082522_da3-1-16"
+            length: "03:29"
+            file: "125082522_da3-1-16.mp4"
+            path: "/data/inbox/125082522_da3-1-16.mp4"
+            format: "MP4"
+            resolution: "3840×2160"
+            codec: "H.265"
+            decoder: "软解"
+            audio: "AAC · 立体声"
+            size: "1.2 GB"
+        }
     }
 
     MouseArea {
@@ -399,13 +440,15 @@ Item {
             anchors.top: queueHead.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.bottom: parent.bottom
+            anchors.bottom: fileCard.top
+            anchors.bottomMargin: 10
             contentHeight: queueCol.height
             clip: true
 
             Column {
                 id: queueCol
                 width: parent.width
+                spacing: 4
 
                 Repeater {
                     model: queueModel
@@ -413,13 +456,16 @@ Item {
                     delegate: Item {
                         width: queueCol.width
                         height: 58
+                        // 选中盖过悬停，两块蓝才分得开
+                        readonly property bool selected: index === root.queueIndex
 
                         Rectangle {
                             anchors.fill: parent
                             radius: 6
-                            color: highlighted ? root.paint("queueItemOn") : "transparent"
+                            color: selected ? root.paint("queueItemOn")
+                                            : (rowMouse.containsMouse ? root.paint("queueItemHover") : "transparent")
                             border.width: 1
-                            border.color: highlighted ? root.paint("queueItemBorder") : "transparent"
+                            border.color: selected ? root.paint("queueItemBorder") : "transparent"
                         }
 
                         Rectangle {
@@ -439,23 +485,25 @@ Item {
                             }
                         }
 
-                        Column {
+                        Text {
                             x: 58
+                            width: parent.width - 68
                             anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width - 66
+                            anchors.verticalCenterOffset: -8
+                            text: title
+                            elide: Text.ElideRight
+                            font.pixelSize: 13
+                            color: root.paint("titleNormal")
+                        }
 
-                            Text {
-                                width: parent.width
-                                text: title
-                                elide: Text.ElideRight
-                                font.pixelSize: 13
-                                color: root.paint("titleNormal")
-                            }
-                            Text {
-                                text: length
-                                font.pixelSize: 12
-                                color: root.paint("navTextNormal")
-                            }
+                        Text {
+                            anchors.right: parent.right
+                            anchors.bottom: parent.bottom
+                            anchors.rightMargin: 8
+                            anchors.bottomMargin: 6
+                            text: length
+                            font.pixelSize: 12
+                            color: root.paint("navTextNormal")
                         }
 
                         MouseStateItem {
@@ -466,8 +514,71 @@ Item {
                             pressColor: "transparent"
                             onClicked: root.queueIndex = index
                         }
+                    }
+                }
+            }
+        }
 
-                        property bool highlighted: index === root.queueIndex || rowMouse.containsMouse
+        Rectangle {
+            id: fileCard
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            radius: 6
+            color: root.paint("popupNormal")
+            border.width: 1
+            border.color: root.paint("popupBorder")
+            height: fileCol.height + 20
+
+            Column {
+                id: fileCol
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: 10
+                spacing: 4
+
+                Text {
+                    width: parent.width
+                    text: root.fileField("file")
+                    elide: Text.ElideMiddle
+                    font.pixelSize: 13
+                    font.bold: true
+                    color: root.paint("titleNormal")
+                }
+
+                Repeater {
+                    model: [
+                        { name: "路径", key: "path" },
+                        { name: "格式", key: "format" },
+                        { name: "分辨率", key: "resolution" },
+                        { name: "视频编码", key: "codec" },
+                        { name: "解码器", key: "decoder" },
+                        { name: "音频", key: "audio" },
+                        { name: "大小", key: "size" }
+                    ]
+
+                    delegate: Item {
+                        width: fileCol.width
+                        height: 18
+
+                        Text {
+                            width: 60
+                            text: modelData.name
+                            font.pixelSize: 12
+                            color: root.paint("navTextNormal")
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Text {
+                            x: 60
+                            width: parent.width - 60
+                            text: root.fileField(modelData.key)
+                            elide: modelData.key === "path" ? Text.ElideMiddle : Text.ElideRight
+                            font.pixelSize: 12
+                            color: root.paint("titleNormal")
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
                 }
             }
