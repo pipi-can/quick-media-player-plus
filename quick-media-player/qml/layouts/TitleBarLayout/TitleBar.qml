@@ -275,6 +275,8 @@ Item {
             hoverColor: root.iconHover
             pressColor: root.iconPress
             onContainsMouseChanged: settingsIcon.spin += 360
+            // 设置不在四个胶囊里，-1 清掉选中，currentPage 变成 settings
+            onClicked: navigatorBar.currentIndex = -1
         }
     }
 }

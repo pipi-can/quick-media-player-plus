@@ -31,6 +31,8 @@ Item {
             return historyPage
         if (name === "share")
             return sharePage
+        if (name === "settings")
+            return settingsPage
         return null
     }
 
@@ -58,6 +60,10 @@ Item {
     Component {
         id: sharePage
         Item { objectName: "share" }
+    }
+    Component {
+        id: settingsPage
+        Item { objectName: "settings" }
     }
 
     Component.onCompleted: showPage(currentPage)

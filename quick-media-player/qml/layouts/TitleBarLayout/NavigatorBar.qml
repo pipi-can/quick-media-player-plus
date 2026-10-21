@@ -11,8 +11,15 @@ Item {
     height: 30
 
     property Theme theme: null
+    // -1 是设置页，四个胶囊都不选中
     property int currentIndex: 0
-    readonly property string currentPage: pages.count > 0 ? pages.get(currentIndex).name : ""
+    readonly property string currentPage: {
+        if (currentIndex < 0)
+            return "settings"
+        if (pages.count === 0)
+            return ""
+        return pages.get(currentIndex).name
+    }
 
     property color textNormal: paint("navTextNormal")
     property color textHover: paint("navTextHover")
