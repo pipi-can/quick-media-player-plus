@@ -78,7 +78,7 @@ Item {
                     text: caption
                     font.pixelSize: 12
                     font.bold: true
-                    font.letterSpacing: 2
+                    font.letterSpacing: 3
                     color: {
                         if (root.currentIndex === index)
                             return root.textOn
