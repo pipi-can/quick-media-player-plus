@@ -29,6 +29,11 @@ qt_add_qml_module(appquick-media-player
         qml/layouts/TitleBarLayout/NavigatorBar.qml
         qml/layouts/TitleBarLayout/ThemePopup.qml
         qml/layouts/ContentLayout/ContentWidget.qml
+        qml/layouts/ContentLayout/VideoLayout/VideoPage.qml
+        qml/layouts/ContentLayout/MusicLayout/MusicPage.qml
+        qml/layouts/ContentLayout/HistoryLayout/HistoryPage.qml
+        qml/layouts/ContentLayout/ShareLayout/SharePage.qml
+        qml/layouts/ContentLayout/SettingsLayout/SettingsPage.qml
         qml/settings/Theme.qml
     RESOURCES
         qml/settings/theme.json
