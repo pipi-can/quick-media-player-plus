@@ -2,35 +2,9 @@
 
 #include <QFileInfo>
 #include <QRandomGenerator>
-#include <QStringList>
 
+#include "playback/mediaprobe.h"
 #include "utils/logger.h"
-
-namespace {
-
-// 后缀只是用来分流。等播放层接上媒体探测，认队列改成读 QMediaFormat
-bool looksLikeVideo(const QString &suffix)
-{
-    static const QStringList suffixes = {
-        QStringLiteral("mp4"),  QStringLiteral("m4v"),   QStringLiteral("mkv"),  QStringLiteral("avi"),
-        QStringLiteral("mov"),  QStringLiteral("flv"),   QStringLiteral("wmv"),  QStringLiteral("webm"),
-        QStringLiteral("mpg"),  QStringLiteral("mpeg"),  QStringLiteral("ts"),   QStringLiteral("m2ts"),
-        QStringLiteral("rmvb"), QStringLiteral("3gp"),   QStringLiteral("vob")
-    };
-    return suffixes.contains(suffix);
-}
-
-bool looksLikeAudio(const QString &suffix)
-{
-    static const QStringList suffixes = {
-        QStringLiteral("mp3"),  QStringLiteral("flac"), QStringLiteral("aac"), QStringLiteral("wav"),
-        QStringLiteral("m4a"),  QStringLiteral("ogg"),  QStringLiteral("opus"), QStringLiteral("wma"),
-        QStringLiteral("ape"),  QStringLiteral("amr"),  QStringLiteral("aiff"), QStringLiteral("mid")
-    };
-    return suffixes.contains(suffix);
-}
-
-}
 
 PlayList::PlayList()
     : QObject(nullptr)
@@ -47,35 +21,48 @@ PlayList &PlayList::getInstance()
     return s_instance;
 }
 
-PlayList::MediaType PlayList::typeOfSource(const QString &source)
+bool PlayList::addMedia(const QString &path)
 {
-    const QString suffix = QFileInfo(source).suffix().toLower();
-    if (looksLikeVideo(suffix))
-        return Video;
-    if (looksLikeAudio(suffix))
-        return Music;
-    return None;
-}
-
-bool PlayList::addMedia(const QString &source)
-{
-    MediaFile file;
-    file.path = source;
-    file.name = QFileInfo(source).fileName();
-    return addMedia(file);
-}
-
-bool PlayList::addMedia(const MediaFile &file)
-{
-    const MediaType type = typeOfSource(file.path);
-    if (type == None) {
-        LOG_WARNING("认不出后缀，没进队列：%s", qPrintable(file.path));
+    if (m_mediaProbe == nullptr) {
+        LOG_WARNING("还没挂媒体探测器，判不了有没有视频流：%s", qPrintable(path));
         return false;
     }
 
-    queueFor(type)->items.push_back(file);
+    const MediaInfo info = m_mediaProbe->probe(path);
+    if (!info.opened || (!info.hasVideoStream && !info.hasAudioStream)) {
+        LOG_WARNING("这个文件里没有能播的流，没进队列：%s", qPrintable(path));
+        return false;
+    }
+
+    // 有视频流就进视频队列，只有音频流才进音乐队列。后缀不参与判断
+    const MediaType type = info.hasVideoStream ? Video : Music;
+
+    MediaFile file;
+    file.path = path;
+    file.name = QFileInfo(path).fileName();
+    file.format = info.format;
+    file.resolution = info.resolution;
+    file.codec = info.videoCodec;
+    file.decoder = info.decoder;
+    file.audio = info.audioCodec;
+    // length、size 是显示用的字符串，等接播放层时再定这边格式化还是 QML 自己写
+    return appendMedia(type, file);
+}
+
+bool PlayList::appendMedia(MediaType type, const MediaFile &file)
+{
+    Queue *queue = queueFor(type);
+    if (queue == nullptr)
+        return false;
+
+    queue->items.push_back(file);
     emit queueContentChanged(type);
     return true;
+}
+
+void PlayList::setMediaProbe(MediaProbe *mediaProbe)
+{
+    m_mediaProbe = mediaProbe;
 }
 
 bool PlayList::removeMedia(MediaType type, int index)

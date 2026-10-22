@@ -5,6 +5,8 @@
 
 #include <vector>
 
+class MediaProbe;
+
 /**
  * @brief 整个播放器的播放队列
  *
@@ -34,7 +36,8 @@ public:
     };
     Q_ENUM(PlayMode)
 
-    // 一条媒体文件。时长、分辨率、编码这些要探测出来的字段先留空，等播放层接上再补
+    // 一条媒体文件。格式、编码这些由 addMedia 从探测结果里填；
+    // length 和 size 是显示用的字符串，还没定是在这边格式化还是 QML 拿原始值自己写
     struct MediaFile {
         QString name;        // 列表上显示的文件名
         QString path;        // 播放器要打开的路径
@@ -52,19 +55,15 @@ public:
     PlayList(const PlayList &) = delete;
     PlayList &operator=(const PlayList &) = delete;
 
-    /**
-     * @brief 加一条媒体文件
-     * @param source 文件路径，按后缀认视频还是音乐
-     * @retval true 加进队列了；false 后缀认不出来，没加
-     */
-    bool addMedia(const QString &source);
+    // 判有没有视频流用的探测器，实现在 playback 层。PlayList 只借用，不负责它的生命周期
+    void setMediaProbe(MediaProbe *mediaProbe);
 
     /**
-     * @brief 加一条探测好的媒体文件
-     * @param file 至少要有 path，按 path 的后缀认队列
-     * @retval true 加进队列了；false 后缀认不出来，没加
+     * @brief 加一条媒体文件
+     * @param path 文件路径。进哪条队列交给探测器判，不看后缀
+     * @retval true 加进队列了；false 没有探测器、文件打不开或里面没有能播的流
      */
-    bool addMedia(const MediaFile &file);
+    bool addMedia(const QString &path);
 
     /**
      * @brief 从队列里删掉一条
@@ -118,9 +117,6 @@ public:
 
     void stop();
 
-    // 按后缀认队列，认不出来返回 None。等接了媒体探测再换成读 QMediaFormat
-    static MediaType typeOfSource(const QString &source);
-
 signals:
     void queueContentChanged(MediaType type);  // 加、删、清空都发这个
     void currentChanged(MediaType type, int index, const QString &source);
@@ -142,6 +138,9 @@ private:
     Queue *queueFor(MediaType type);
     const Queue *queueFor(MediaType type) const;
 
+    // 探测过、认好队列之后才落到这里
+    bool appendMedia(MediaType type, const MediaFile &file);
+
     /**
      * @brief 按播放模式算这条放完之后接着放哪条
      * @param queue 当前队列
@@ -159,4 +158,5 @@ private:
     Queue m_videoQueue;
     Queue m_musicQueue;
     MediaType m_activeType = None;
+    MediaProbe *m_mediaProbe = nullptr;
 };
