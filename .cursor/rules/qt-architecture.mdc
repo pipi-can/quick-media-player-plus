@@ -10,7 +10,7 @@ C++ 只处理数据与业务，QML 只画界面。两者是前后端，不互相
 ## 入口要短
 
 - `main.cpp`：创建 `QGuiApplication`、取出单例、`setContextProperty`、必要时 `addImageProvider`、`engine.load`。不写业务、不写长串 `connect`（放到对应 Manager 或一个很薄的启动辅助类）。
-- `main.qml`：只挂 `AppMainWindow`。不写整页布局、不写控件实现。
+- `main.qml`：只挂 `FramelessWindow`。不写整页布局、不写控件实现。
 
 ```qml
 import QtQuick
@@ -51,17 +51,21 @@ quick-media-player/
     download/               联网下载
   sources/                  与 includes 一一对应的 .cpp
     utils/  sql/  settings/  playlist/  playback/  share/  download/
-  qml/                      QML 界面，全部放这里，按页面拆
-    main.qml
-    utils/
-    layouts/                  窗口和页面
-      AppMainWindow/
-      TitleBarLayout/
-      PlayLayout/
-      HistoryLayout/
-      SettingsLayout/
-      OtherLayout/
-      CustomComponents/
+  qml/                  QML 界面，全部放这里，按页面拆
+    main.qml                入口，只挂 FramelessWindow
+    settings/               主题与配色：Theme.qml、theme.json
+    utils/                  不画界面、只放方法的工具类
+    layouts/                窗口和页面
+      FramelessWindow.qml   无边框窗口，main.qml 挂的就是它
+      TitleBarLayout/       标题栏：TitleBar、NavigatorBar、ThemePopup
+      ContentLayout/        标题栏下面的内容区
+        ContentWidget.qml   切页与淡入淡出，五个页面各在一个子目录
+        VideoLayout/        视频页
+        MusicLayout/        音乐页
+        HistoryLayout/      历史页
+        ShareLayout/        共享页
+        SettingsLayout/     设置页
+      CustomComponents/     复用的原子控件
   resources/                已导入的 icon，按界面分子目录（不要另放别处）
     AppIcons/  TitleBarIcons/  PlayWidgetIcons/
     HistoryWidgetIcons/  AdvancedWidgetIcons/
@@ -111,7 +115,7 @@ Utils { id: utils }
 - `defaultState`：默认状态名。`currentState`：当前状态名。
 - 切换状态只改变对应控件的显示。
 
-`resources/` 只放 icon 等资源，`libs/` 只放动态库，两者都已就位，不要把源码或 QML 塞进去。新文件写入构建脚本和对应 `.qrc`。
+`resources/` 只放 icon 等资源，`libs/` 只放动态库，两者都已就位，不要把源码或 QML 塞进去。新文件写入 `CMakeLists.txt` 的 `QML_FILES` / `RESOURCES`。
 
 ## 提交备份
 

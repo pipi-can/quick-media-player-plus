@@ -41,7 +41,7 @@ void setCurrentIndex(int index);
 ## QML 模块化
 
 - 一个可视化或逻辑块一个文件；文件名 = 根组件名。
-- `main.qml` / `AppMainWindow.qml` 只组装。整页、整条控制栏、整份列表不准内联堆在入口里。
+- `main.qml` / `FramelessWindow.qml` 只组装。整页、整条控制栏、整份列表不准内联堆在入口里。
 - 能复用的控件抽到 `qml/layouts/CustomComponents/`，页面再层层调用：窗口 → 页面 → 区块 → 原子控件。
 - 参考：`PlayWidget` 再拆 `VideoPlayWidget` / `MusicPlayWidget` / `PlayControllerWidget`；滑条用 `HorizontalSlider` / `VerticalSlider`，不要每个页面复制一份。
 - id、属性、自定义信号用 camelCase。优先 Qt Quick Controls。
@@ -54,4 +54,4 @@ PlayWidget { id: playWidget }
 TitleBarWidget { id: titleBar }
 ```
 
-新加 `.qml` / 源文件时同步改 `.qrc` 和 `.pro`。
+新加 `.qml` / 源文件 / 资源时同步加进 `CMakeLists.txt` 的 `QML_FILES` / `RESOURCES`。
