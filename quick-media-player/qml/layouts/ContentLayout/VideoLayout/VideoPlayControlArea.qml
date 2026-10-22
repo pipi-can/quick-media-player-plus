@@ -21,11 +21,12 @@ Item {
     readonly property color btnColor: paint("iconNormal")
     readonly property color btnHover: paint("iconHover")
     readonly property color btnPress: paint("iconPress")
-    readonly property color pressFill: paint("queueItemHover")
 
-    // 按钮 28、图标 18，取自原型 .ico 和 .icon，所以四周各留 5
+    // 按钮 28、图标 18，取自原型 .ico 和 .icon，所以四周各留 5。播放键比它们大一圈
     readonly property real btnSize: 28
     readonly property real iconInset: 5
+    readonly property real playBtnSize: 36
+    readonly property real playIconInset: 6
 
     // 进度条 4、间距 8、按钮行 28、底下再留 8
     implicitHeight: 48
@@ -80,12 +81,6 @@ Item {
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
 
-            Rectangle {
-                anchors.fill: parent
-                radius: 4
-                color: prevMouse.mouseState === "press" ? root.pressFill : "transparent"
-            }
-
             ColorImage {
                 anchors.fill: parent
                 anchors.margins: root.iconInset
@@ -102,12 +97,12 @@ Item {
             }
         }
 
-        // 播放和暂停共用这一个按钮，图标由 MultiStateItem 按 playing 切。
+        // 播放和暂停共用这一个按钮，比旁边的大一圈。图标由 MultiStateItem 按 playing 切，
         // 状态名说的是「正在播 / 已暂停」，画的是点下去会发生什么
         MultiStateItem {
             id: playButton
-            width: root.btnSize
-            height: root.btnSize
+            width: root.playBtnSize
+            height: root.playBtnSize
             anchors.left: prevButton.right
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
@@ -121,16 +116,10 @@ Item {
             ]
             items: [pauseIcon, playIcon]
 
-            Rectangle {
-                anchors.fill: parent
-                radius: 4
-                color: playMouse.mouseState === "press" ? root.pressFill : "transparent"
-            }
-
             ColorImage {
                 id: pauseIcon
                 anchors.fill: parent
-                anchors.margins: root.iconInset
+                anchors.margins: root.playIconInset
                 source: "qrc:/quick-media-player/resources/PlayWidgetIcons/pause.svg"
                 color: playMouse.color
             }
@@ -138,7 +127,7 @@ Item {
             ColorImage {
                 id: playIcon
                 anchors.fill: parent
-                anchors.margins: root.iconInset
+                anchors.margins: root.playIconInset
                 source: "qrc:/quick-media-player/resources/PlayWidgetIcons/play.svg"
                 color: playMouse.color
             }
@@ -149,6 +138,8 @@ Item {
                 normalColor: root.btnColor
                 hoverColor: root.btnHover
                 pressColor: root.btnPress
+                // 这一版还没有播放器，点了先自己翻一下；接上播放器后改成把点击交给外面
+                onClicked: root.playing = !root.playing
             }
         }
 
@@ -160,12 +151,6 @@ Item {
             anchors.left: playButton.right
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-
-            Rectangle {
-                anchors.fill: parent
-                radius: 4
-                color: nextMouse.mouseState === "press" ? root.pressFill : "transparent"
-            }
 
             ColorImage {
                 anchors.fill: parent
@@ -200,12 +185,6 @@ Item {
             height: root.btnSize
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-
-            Rectangle {
-                anchors.fill: parent
-                radius: 4
-                color: volumeMouse.mouseState === "press" ? root.pressFill : "transparent"
-            }
 
             ColorImage {
                 anchors.fill: parent

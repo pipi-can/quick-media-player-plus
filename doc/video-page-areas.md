@@ -49,6 +49,7 @@ VideoPage                         Item，objectName: "video"
 | 属性 | `screenState` | `string`，取值 `empty` / `loading` / `paused` / `playing` / `error`，默认 `empty` |
 | 只读 | `stageColor`、`stageInk`、`stageEdge` | 画面底、图标文字、1px 边 |
 | 只读 | `fitWidth` | `Math.min(width, height * 16 / 9)`，画面能铺到的最大宽 |
+| 只读 | `faceScale` | `screen.width / 692`，画面里图标和文字等比缩放用的系数 |
 | 函数 | `paint(key)` | 取主题色，`theme` 没挂上时返回透明 |
 
 画面是一块 `Rectangle`，在父项里居中：宽 = 播放中 ? `fitWidth` : `fitWidth × 0.618`；高 = 宽 × 9 / 16；圆角 8；1px 边。0.618 就是原型里「没在播时只取最大尺寸的 0.618」，播放时铺满。
@@ -63,12 +64,13 @@ VideoPage                         Item，objectName: "video"
 | `playing` | 无 | 无（不盖东西，画面让给视频） |
 | `error` | `AppIcons/error.svg` | 打不开这个视频 |
 
-每一态的排版都是同一个内联组件 `Face`：`Column`，图标 36×36 + 文案 13px，间距 16，整体在画面里居中，图标和文字都用 `stageInk`。没有图标的两态只显示一行字。
+每一态的排版都是同一个内联组件 `Face`：`Column`，整体在画面里居中，图标和文字都用 `stageInk`。图标 36、文案 13px、间距 16 这三个数都乘 `faceScale`，跟着画面一起缩（基准是 692 的画面宽，那时的尺寸正好是这三个数）。没有图标的两态只显示一行字。
 
-两点注意：
+三点注意：
 
 - 五个状态只换画面内容，**不代表已经在解码**。`playing` 那一态什么都不画，将来真画面就挂在这块 `Rectangle` 里。
 - 图标是单色 svg，走 `ColorImage` 上色。
+- 原型把这三样写死成 36 / 13 / 16（`.screen .icon` 和 `.screen p` 继承的正文字号），窗口一大这块的占比就变小。这里是**有意偏离**：量过画面宽 690 时图标墨迹 28 高、画面宽 758 时 31 高，比例一致（写死的话两处都该是 28）。原型那边没跟着改。
 
 用到的配色键：`stageNormal`、`stageText`、`stageBorder`。
 
@@ -102,7 +104,7 @@ VideoPage                         Item，objectName: "video"
 
 选中和悬停**故意不靠深浅区分**（浅色主题下这两档明度很接近），选中另外靠左边那条竖标记。
 
-用到的配色键：`titleNormal`、`queueItemOn`、`queueItemHover`、`queueMark`、`navTextNormal`、`videoThumb`、`videoThumbIcon`、`iconNormal` / `iconHover` / `iconPress`（加号，按下垫的底色也用 `queueItemHover`）。
+用到的配色键：`titleNormal`、`queueItemOn`、`queueItemHover`、`queueMark`、`navTextNormal`、`videoThumb`、`videoThumbIcon`、`iconNormal` / `iconHover` / `iconPress`（加号按钮，按下只换颜色，不垫底色）。
 
 ### 2.3 VideoPlayControlArea 播放控制区
 
@@ -124,13 +126,13 @@ VideoPage                         Item，objectName: "video"
 
 按钮行：高 28，贴进度条下 8，左右各内缩 12。
 
-- 从左往右：上一个（`lastone.svg`）、播放 / 暂停、下一个（`nextone.svg`），各自是一个 28×28 的 `Item`，互相间隔 8；再空 8 跟时间文字（12px）。播放键的根是 `MultiStateItem`，`playing` 为真显示暂停图标（`pause.svg`）、为假显示播放图标（`play.svg`）。
+- 从左往右：上一个（`lastone.svg`）、播放 / 暂停、下一个（`nextone.svg`），互相间隔 8；再空 8 跟时间文字（12px）。上一个和下一个是 28×28 的 `Item`（图标 18）；播放键的根是 `MultiStateItem`，36×36、图标 24，比旁边的大一圈，仍在同一行里垂直居中（行高还是 28，它上下各多出 4）。`playing` 为真显示暂停图标（`pause.svg`）、为假显示播放图标（`play.svg`）；点一下把 `playing` 翻过来（这一版没有播放器，先自己翻）。
 - 从右往左：音量按钮（`volume.svg`）、倍速文字、模式文字，都是 12px 加粗、带上下 4 左右 8 的内边距。倍速和模式只接了 `MouseStateItem` 换颜色，**还没有下拉菜单**。
 - 中间剩下的空白就是原型里的 `.grow`。
 
-按钮的 `clicked` 现在没有接，点了只有视觉反馈。
+除了播放键，其它按钮的 `clicked` 都没有接，点了只有换颜色这一点反馈。
 
-用到的配色键：`progressNormal`（轨道）、`progressThumb`（圆点）、`titleNormal`（时间）、`iconNormal` / `iconHover` / `iconPress`（按钮和倍速、模式文字，按下垫底用 `queueItemHover`）。
+用到的配色键：`progressNormal`（轨道）、`progressThumb`（圆点）、`titleNormal`（时间）、`iconNormal` / `iconHover` / `iconPress`（按钮和倍速、模式文字，按下只换颜色）。
 
 ### 2.4 VideoMessageArea 播放信息区
 
@@ -167,7 +169,7 @@ VideoPage                         Item，objectName: "video"
 | `MultiStateItem` | 播放区的五个状态 | `stateCount`、`stateInfos`（每项有 `name`）、`items`（和 `stateInfos` 顺序一一对应）、`defaultState`、`currentState`、`next()`。三个数量对不齐会报错 |
 | `ColorImage` | 所有单色图标 | `source` + `color`（给单色 svg 上色）、`fillMode`。原图只给 `ColorOverlay` 取样，自己不显示 |
 
-图标按钮不为它单独造控件，直接照 `TitleBar.qml` 里窗口控制那几个按钮的写法摊在用的地方：一个 `Item`（28×28）装三样东西 —— 按下垫底的 `Rectangle`、`ColorImage`（图标 18×18，所以四周各留 5）、压在最上面的 `MouseStateItem`。
+图标按钮不为它单独造控件，直接照 `TitleBar.qml` 里窗口控制那几个按钮的写法摊在用的地方：一个 `Item`（28×28）装两样东西 —— `ColorImage`（图标 18×18，所以四周各留 5）和压在最上面的 `MouseStateItem`。原型 `.ico:active`、`.txt:active` 会垫一层底色，视频页**不垫**：按下只换成 `iconPress` 的色，和 TitleBar 一样；只有「详情」那处（`.file-more:active`）还垫底色。
 
 ```qml
 // 图标按钮：28 的按钮配 18 的图标
@@ -175,13 +177,6 @@ Item {
     id: prevButton
     width: 28
     height: 28
-
-    // 原型 .ico:active 会垫一层底色
-    Rectangle {
-        anchors.fill: parent
-        radius: 4
-        color: prevMouse.mouseState === "press" ? root.pressFill : "transparent"
-    }
 
     ColorImage {
         anchors.fill: parent
@@ -200,7 +195,7 @@ Item {
 }
 ```
 
-一个按钮要在两张图标之间切的（播放 / 暂停、最大化 / 还原），把根换成 `MultiStateItem`，两个 `ColorImage` 放进 `items`、顺序和 `stateInfos` 对上，`currentState` 由外面给。现成例子：`TitleBar.qml` 的 `windowMode`、`VideoPlayControlArea.qml` 的 `playButton`。
+一个按钮要在两张图标之间切的（播放 / 暂停、最大化 / 还原），把根换成 `MultiStateItem`，两个 `ColorImage` 放进 `items`、顺序和 `stateInfos` 对上，`currentState` 由外面给。现成例子：`TitleBar.qml` 的 `windowMode`、`VideoPlayControlArea.qml` 的 `playButton`（它就是放大版：按钮 36、图标 24）。
 
 各区域切颜色的写法统一是：
 
@@ -236,10 +231,10 @@ function paint(key) {
 - 页面：上 8、右 12、下 12；画面列左 12；队列列宽 280（固定）；队列列和画面列之间 16
 - 队列列内部：队列区与信息区之间 8
 - 队列：标题行 40（上 4 + 按钮 28 + 下 8）、行高 58、行间距 4、缩略图 42 圆、标记条宽 3
-- 控制条：48 = 4 + 8 + 28 + 8
-- 画面：16:9，圆角 8，1px 边，没在播时取最大尺寸的 0.618
+- 控制条：48 = 4 + 8 + 28 + 8（播放键 36 高，在 28 的行里居中，上下各多出 4，不算进高度）
+- 画面：16:9，圆角 8，1px 边，没在播时取最大尺寸的 0.618；画面里的图标 36、文案 13、间距 16 按画面宽等比缩，基准宽 692
 - 信息卡：内边距上下各 12、详情行高 18、标签列宽 60
-- 字号：15 加粗（队列标题）、13（画面文案、队列文件名、信息区文件名）、12（时间、倍速、模式、时长、「正在播放」、摘要、详情、详情行的标签和值）
+- 字号：15 加粗（队列标题）、13（队列文件名、信息区文件名；画面文案基准 692 时是 13，随画面缩）、12（时间、倍速、模式、时长、「正在播放」、摘要、详情、详情行的标签和值）
 
 ## 6. 原型对照表
 
@@ -247,7 +242,9 @@ function paint(key) {
 | --- | --- |
 | `.screen` 宽 `min(100cqw × 0.618, 100cqh × 16/9 × 0.618)` | `fitWidth × 0.618`，其中 `fitWidth = min(width, height × 16/9)` |
 | `.screen.is-playing` 宽 `min(100cqw, 100cqh × 16/9)` | `fitWidth` |
-| `.screen` border 1 / radius 8 / `.screen .icon` 36×36 / gap 16 | 同上（`Face` 的 spacing 16） |
+| `.screen` border 1 / radius 8 / `.screen .icon` 36×36 / gap 16（写死的） | 同样三个数，但都乘 `faceScale` 跟画面等比缩（见 §2.1） |
+| `.ico:active` 垫 `--hover` | 不实现：图标按钮按下只换颜色，和 TitleBar 一样 |
+| `.txt:active` 垫 `--hover` | 没实现：倍速、模式文字按下只换颜色 |
 | `.ctrl` `padding: 0 12 8` | 左右各 12、下 8，`implicitHeight: 48` |
 | `.ctrl-row` gap 8 / margin-top 8 | 按钮间隔 8、贴进度条下 8 |
 | `.queue` width 280 | `queueColumn.width: 280` |
@@ -281,6 +278,6 @@ function paint(key) {
 1. 队列数据是 `VideoPage` 里写死的三条，字段：`name`、`length`、`path`、`format`、`resolution`、`codec`、`decoder`、`audio`、`size`。等 `PlayList` 单例。
 2. `VideoPage.currentIndex` 默认 0，所以队列第一行默认选中、信息区默认有内容；原型是点过队列行才有内容。接真数据时这里要跟着改成“未选中”。
 3. 画面五个状态只是显示，没接解码，`playing` 那一态还是空的。
-4. 控制条点了不接播放，进度只显示不能拖。
+4. 控制条只有播放键能点（点了自己把 `playing` 翻过来），其它都不接；进度只显示不能拖。
 5. 倍速、模式只有文字，没有下拉菜单；音量只有图标，没有滑条。
 6. 队列不能拖拽排序，也不能删除、多选。

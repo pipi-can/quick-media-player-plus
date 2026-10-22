@@ -31,7 +31,6 @@ Item {
     readonly property color btnColor: paint("iconNormal")
     readonly property color btnHover: paint("iconHover")
     readonly property color btnPress: paint("iconPress")
-    readonly property color pressFill: paint("queueItemHover")
 
     function paint(key) {
         return theme ? theme.colorOf(key) : "#00000000"
@@ -64,12 +63,6 @@ Item {
             y: 4
             anchors.right: parent.right
             anchors.rightMargin: 8
-
-            Rectangle {
-                anchors.fill: parent
-                radius: 4
-                color: addMouse.mouseState === "press" ? root.pressFill : "transparent"
-            }
 
             ColorImage {
                 anchors.fill: parent

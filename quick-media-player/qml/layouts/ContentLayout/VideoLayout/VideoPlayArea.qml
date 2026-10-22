@@ -20,6 +20,10 @@ Item {
     // 画面同时受宽和高约束，取小的那条，正好是 16:9
     readonly property real fitWidth: Math.min(width, height * 16 / 9)
 
+    // 画面里的图标、文字、间距跟着画面一起缩，不然窗口一大这块就显得小、一小就显得挤。
+    // 以标准窗口下空闲画面宽 692 为基准（那时图标 36、字号 13、间距 16）
+    readonly property real faceScale: screen.width / 692
+
     function paint(key) {
         return theme ? theme.colorOf(key) : "#00000000"
     }
@@ -48,17 +52,18 @@ Item {
             defaultState: "empty"
             currentState: root.screenState
 
-            // 图标加一行说明，几个画面只有内容不同。没有图标的状态只写一行字
+            // 图标加一行说明，几个画面只有内容不同。没有图标的状态只写一行字。
+            // 尺寸都乘 faceScale，和画面保持同一个比例
             component Face: Column {
                 property alias iconSource: faceIcon.source
                 property string caption: ""
                 anchors.centerIn: parent
-                spacing: 16
+                spacing: 16 * root.faceScale
 
                 ColorImage {
                     id: faceIcon
-                    width: 36
-                    height: 36
+                    width: 36 * root.faceScale
+                    height: width
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: root.stageInk
                 }
@@ -67,7 +72,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: parent.caption
                     color: root.stageInk
-                    font.pixelSize: 13
+                    font.pixelSize: 13 * root.faceScale
                 }
             }
 
