@@ -1,3 +1,4 @@
 {
-  "skills": [".cursor/skills"]
+  "skills": [".cursor/skills"],
+  "instructions": [".cursor/rules/*.mdc"]
 }
