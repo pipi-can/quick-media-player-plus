@@ -22,6 +22,7 @@ qt_add_qml_module(appquick-media-player
         qml/utils/Utils.qml
         qml/layouts/FramelessWindow.qml
         qml/layouts/CustomComponents/ColorImage.qml
+        qml/layouts/CustomComponents/IconButton.qml
         qml/layouts/CustomComponents/MultiStateItem.qml
         qml/layouts/CustomComponents/MouseStateItem.qml
         qml/layouts/CustomComponents/Seprator.qml
@@ -30,6 +31,10 @@ qt_add_qml_module(appquick-media-player
         qml/layouts/TitleBarLayout/ThemePopup.qml
         qml/layouts/ContentLayout/ContentWidget.qml
         qml/layouts/ContentLayout/VideoLayout/VideoPage.qml
+        qml/layouts/ContentLayout/VideoLayout/VideoPlayArea.qml
+        qml/layouts/ContentLayout/VideoLayout/VideoPlayControlArea.qml
+        qml/layouts/ContentLayout/VideoLayout/VideoPlaylistArea.qml
+        qml/layouts/ContentLayout/VideoLayout/VideoMessageArea.qml
         qml/layouts/ContentLayout/MusicLayout/MusicPage.qml
         qml/layouts/ContentLayout/HistoryLayout/HistoryPage.qml
         qml/layouts/ContentLayout/ShareLayout/SharePage.qml
@@ -38,6 +43,7 @@ qt_add_qml_module(appquick-media-player
     RESOURCES
         qml/settings/theme.json
         resources/AppIcons/MainIcon.svg
+        resources/AppIcons/error.svg
         resources/TitleBarIcons/minimize.svg
         resources/TitleBarIcons/maximize.svg
         resources/TitleBarIcons/normalize.svg
@@ -45,8 +51,10 @@ qt_add_qml_module(appquick-media-player
         resources/TitleBarIcons/theme.svg
         resources/TitleBarIcons/settings.svg
         resources/PlayWidgetIcons/play.svg
+        resources/PlayWidgetIcons/pause.svg
         resources/PlayWidgetIcons/lastone.svg
         resources/PlayWidgetIcons/nextone.svg
+        resources/PlayWidgetIcons/volume.svg
         resources/PlayWidgetIcons/add.svg
 )
 
