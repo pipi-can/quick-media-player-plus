@@ -39,4 +39,22 @@ MouseArea {
             return hoverCursor
         return normalCursor
     }
+
+    // 鼠标点过的焦点不画圈，只有键盘走到这里才画
+    activeFocusOnTab: true
+
+    Rectangle {
+        anchors.fill: parent
+        color: "transparent"
+        radius: 4
+        border.width: root.visualFocus ? 2 : 0
+        border.color: root.palette.highlight
+    }
+
+    Keys.onPressed: function (event) {
+        if (event.key !== Qt.Key_Return && event.key !== Qt.Key_Enter && event.key !== Qt.Key_Space)
+            return
+        event.accepted = true
+        root.clicked(null)
+    }
 }

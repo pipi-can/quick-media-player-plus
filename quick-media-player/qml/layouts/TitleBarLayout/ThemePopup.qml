@@ -32,11 +32,21 @@ Popup {
         return theme.colorOf(key)
     }
 
-    background: Rectangle {
-        radius: 12
-        color: root.panelColor
-        border.color: root.borderColor
-        border.width: 1
+    background: Item {
+        Rectangle {
+            anchors.fill: parent
+            anchors.topMargin: 6
+            radius: 8
+            color: "#40000000"
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: 8
+            color: root.panelColor
+            border.color: root.borderColor
+            border.width: 1
+        }
     }
 
     enter: Transition {

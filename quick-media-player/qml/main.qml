@@ -8,7 +8,7 @@ import "./utils"
 FramelessWindow {
     id: applicationMainWindow
     title: "QuickMediaPlayer"
-    radius: 10
+    radius: 8
     visible: theme.ready
 
     Theme {

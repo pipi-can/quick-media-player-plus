@@ -65,7 +65,7 @@ Item {
         anchors.leftMargin: 5
         text: "QMediaPlayer"
         color: root.titleColor
-        font.pixelSize: 20
+        font.pixelSize: 18
         font.bold: true
     }
 

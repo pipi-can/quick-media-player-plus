@@ -195,8 +195,14 @@
   let videoDrag = null;
 
   function showFile(item) {
-    fileName.textContent = item.dataset.file;
-    fileBrief.textContent = item.dataset.format + " · " + item.dataset.resolution + " · " + item.dataset.size;
+    const parts = [];
+    ["format", "resolution", "size"].forEach(function (key) {
+      if (item.dataset[key]) {
+        parts.push(item.dataset[key]);
+      }
+    });
+    fileName.textContent = item.dataset.file || "";
+    fileBrief.textContent = parts.join(" · ");
     fileRows.innerHTML = "";
     fileFields.forEach(function (field) {
       const row = document.createElement("div");
@@ -204,7 +210,7 @@
       const label = document.createElement("span");
       label.textContent = field[0];
       const value = document.createElement("span");
-      value.textContent = item.dataset[field[1]];
+      value.textContent = item.dataset[field[1]] || "";
       row.appendChild(label);
       row.appendChild(value);
       fileRows.appendChild(row);
@@ -292,10 +298,32 @@
   });
 
   const videoPlay = document.getElementById("videoPlay");
-  const videoScreen = document.querySelector("#page-video .screen");
+  const videoScreen = document.getElementById("videoScreen");
+  let playingItem = videoQueue.querySelector(".q-item.is-playing");
+
+  function setScreen(state) {
+    ["empty", "loading", "paused", "playing", "error"].forEach(function (name) {
+      videoScreen.classList.toggle("is-" + name, name === state);
+    });
+    videoPlay.querySelector("use").setAttribute("href", state === "playing" ? "#i-pause" : "#i-play");
+  }
+
+  // 正在播放和鼠标点中的那一条是两件事。暂停只收起播放标记，不改选中
   videoPlay.addEventListener("click", function () {
-    const on = videoScreen.classList.toggle("is-playing");
-    videoPlay.querySelector("use").setAttribute("href", on ? "#i-pause" : "#i-play");
+    if (videoScreen.classList.contains("is-playing")) {
+      setScreen("paused");
+      videoQueue.querySelectorAll(".q-item").forEach(function (el) {
+        el.classList.remove("is-playing");
+      });
+      return;
+    }
+    if (!playingItem) {
+      playingItem = videoQueue.querySelector(".q-item.is-on");
+    }
+    videoQueue.querySelectorAll(".q-item").forEach(function (el) {
+      el.classList.toggle("is-playing", el === playingItem);
+    });
+    setScreen("playing");
   });
 
   applyTheme("light");

@@ -31,6 +31,8 @@
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m6 12 4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
     <symbol id="i-more" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/></symbol>
     <symbol id="i-note" viewBox="0 0 24 24"><path d="M9 18.2a2.4 2.4 0 1 1-2.2-2.4V8.6l10-2.2v9.2a2.4 2.4 0 1 1-2.2-2.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-empty" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 10h16M9 6v4M15 6v4" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.6v5.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.2" r="0.9" fill="currentColor"/></symbol>
   </svg>
 
   <div class="window" id="window">
@@ -47,7 +49,13 @@
       </nav>
       <div class="win-btns">
         <button type="button" class="ico" id="settingsBtn" title="设置"><svg class="icon"><use href="#i-gear"></use></svg></button>
-        <button type="button" class="ico" id="themeBtn" title="主题"><svg class="icon"><use href="#i-theme"></use></svg></button>
+        <div class="pop-host">
+          <button type="button" class="ico" id="themeBtn" title="主题"><svg class="icon"><use href="#i-theme"></use></svg></button>
+          <div class="theme-pop" id="themeMenu">
+            <button type="button" data-theme="light" class="is-on">Light</button>
+            <button type="button" data-theme="dark">Dark</button>
+          </div>
+        </div>
         <span class="sep"></span>
         <button type="button" class="ico" id="minBtn" title="最小化"><svg class="icon"><use href="#i-min"></use></svg></button>
         <button type="button" class="ico" id="maxBtn" title="最大化"><svg class="icon"><use href="#i-max"></use></svg></button>
@@ -58,16 +66,30 @@
     <section class="page is-on" id="page-video">
       <div class="stage">
         <div class="screen-well">
-          <div class="screen">
-            <svg class="icon accent"><use href="#i-play"></use></svg>
-            <p>拖入视频，或点右侧加号加入队列</p>
+          <div class="screen is-playing" id="videoScreen">
+            <div class="screen-face" data-state="empty">
+              <svg class="icon"><use href="#i-empty"></use></svg>
+              <p>还没有视频。点右侧加号加入队列</p>
+            </div>
+            <div class="screen-face" data-state="loading">
+              <p>正在打开</p>
+            </div>
+            <div class="screen-face" data-state="paused">
+              <svg class="icon"><use href="#i-pause"></use></svg>
+              <p>已暂停</p>
+            </div>
+            <div class="screen-face" data-state="playing"></div>
+            <div class="screen-face" data-state="error">
+              <svg class="icon"><use href="#i-alert"></use></svg>
+              <p>打不开这个视频</p>
+            </div>
           </div>
         </div>
         <div class="ctrl">
           <input class="seek" type="range" min="0" max="100" value="18">
           <div class="ctrl-row">
             <button type="button" class="ico"><svg class="icon"><use href="#i-prev"></use></svg></button>
-            <button type="button" class="ico" id="videoPlay"><svg class="icon"><use href="#i-play"></use></svg></button>
+            <button type="button" class="ico" id="videoPlay"><svg class="icon"><use href="#i-pause"></use></svg></button>
             <button type="button" class="ico"><svg class="icon"><use href="#i-next"></use></svg></button>
             <span class="time">00:07 / 05:27</span>
             <span class="grow"></span>
@@ -110,19 +132,22 @@
           <button type="button" class="ico" title="加入文件"><svg class="icon"><use href="#i-plus"></use></svg></button>
         </div>
         <ul class="queue-list" id="videoQueue">
-          <li class="q-item is-on" data-file="灰色轨迹.mp4" data-path="/home/video/灰色轨迹.mp4" data-format="MP4" data-resolution="1920×1080" data-codec="H.264" data-decoder="软解" data-audio="AAC · 48 kHz" data-size="86.4 MB">
+          <li class="q-item is-playing is-on" data-file="灰色轨迹.mp4" data-path="/home/video/灰色轨迹.mp4" data-format="MP4" data-resolution="1920×1080" data-codec="H.264" data-decoder="软解" data-audio="AAC · 48 kHz" data-size="86.4 MB">
             <div class="thumb"><svg class="icon"><use href="#i-play"></use></svg></div>
-            <p class="q-title">播放中：灰色轨迹</p>
+            <p class="q-title">灰色轨迹</p>
+            <span class="q-play">正在播放</span>
             <span class="q-len">03:24</span>
           </li>
           <li class="q-item" data-file="1120415067-1-20808.mkv" data-path="/data/inbox/1120415067-1-20808.mkv" data-format="MKV" data-resolution="1280×720" data-codec="H.265" data-decoder="VAAPI 硬解" data-audio="AAC · 立体声" data-size="214 MB">
             <div class="thumb"><svg class="icon"><use href="#i-play"></use></svg></div>
             <p class="q-title">1120415067-1-20808</p>
+            <span class="q-play">正在播放</span>
             <span class="q-len">05:01</span>
           </li>
           <li class="q-item" data-file="125082522_da3-1-16.mp4" data-path="/data/inbox/125082522_da3-1-16.mp4" data-format="MP4" data-resolution="3840×2160" data-codec="H.265" data-decoder="软解" data-audio="AAC · 立体声" data-size="1.2 GB">
             <div class="thumb"><svg class="icon"><use href="#i-play"></use></svg></div>
             <p class="q-title">125082522_da3-1-16</p>
+            <span class="q-play">正在播放</span>
             <span class="q-len">03:29</span>
           </li>
         </ul>
@@ -346,11 +371,6 @@
         <p class="set-line">这里先还原设置页的位置，快捷键和播放选项后续再接到 Qt 工程。</p>
       </div>
     </section>
-  </div>
-
-  <div class="theme-pop" id="themeMenu">
-    <button type="button" data-theme="light" class="is-on">Light</button>
-    <button type="button" data-theme="dark">Dark</button>
   </div>
 
   <script src="player.js"></script>

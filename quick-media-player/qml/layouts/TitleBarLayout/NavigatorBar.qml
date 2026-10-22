@@ -27,6 +27,7 @@ Item {
     property color fillNormal: paint("navFillNormal")
     property color fillHover: paint("navFillHover")
     property color fillOn: paint("navFillOn")
+    property color fillPress: paint("navFillPress")
 
     // 配色没到齐时不缓动。悬停是换用哪一套颜色，不走这段动画
     Behavior on textNormal { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
@@ -35,6 +36,7 @@ Item {
     Behavior on fillNormal { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
     Behavior on fillHover { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
     Behavior on fillOn { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
+    Behavior on fillPress { enabled: theme && theme.ready; ColorAnimation { duration: 560; easing.type: Easing.InOutCubic } }
 
     function paint(key) {
         if (!theme)
@@ -65,8 +67,10 @@ Item {
                     radius: height / 2
                     // 选中时悬停保持选中色，和原型 pill:hover:not(.is-on) 一样
                     color: {
-                        if (root.currentIndex === index)
-                            return root.fillOn
+                        var on = root.currentIndex === index
+                        var down = pillMouse.pressed && pillMouse.containsMouse
+                        if (on)
+                            return down ? root.fillPress : root.fillOn
                         if (pillMouse.containsMouse)
                             return root.fillHover
                         return root.fillNormal

@@ -1,3 +1,4 @@
+#include <QFont>
 #include <QGuiApplication>
 #include <QIcon>
 #include <QQmlApplicationEngine>
@@ -14,6 +15,10 @@ int main(int argc, char *argv[])
     qputenv("QT_QUICK_CONTROLS_STYLE", "Basic");
 
     QGuiApplication app(argc, argv);
+
+    // 本机没有 Segoe UI、苹方、微软雅黑。思源黑体是已经装上的中文界面字体
+    QFont appFont(QStringLiteral("Source Han Sans SC"));
+    app.setFont(appFont);
 
     Logger::getInstance().setLogLevel(Logger::Debug);
     LOG_DEBUG("logger ready");
