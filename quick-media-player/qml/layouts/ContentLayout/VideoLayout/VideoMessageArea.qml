@@ -20,8 +20,8 @@ Item {
     readonly property color cardEdge: paint("popupBorder")
     readonly property color textColor: paint("titleNormal")
     readonly property color mutedColor: paint("navTextNormal")
-    // 主题色压在白卡上只有 2.5:1，文字用暗一档的那支
-    readonly property color accentColor: paint("accentInkNormal")
+    // 详情按钮和图标一样用主题色，亮色主题下也不暗化
+    readonly property color accentColor: paint("logoNormal")
     readonly property color pressFill: paint("queueItemHover")
 
     // 一行里放格式、分辨率、体积，和原型一样用点隔开
