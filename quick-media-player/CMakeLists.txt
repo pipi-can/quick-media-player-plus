@@ -12,6 +12,8 @@ qt_add_executable(appquick-media-player
     main.cpp
     includes/utils/logger.h
     sources/utils/logger.cpp
+    includes/playlist/playlist.h
+    sources/playlist/playlist.cpp
 )
 
 qt_add_qml_module(appquick-media-player
