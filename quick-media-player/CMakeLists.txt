@@ -22,7 +22,6 @@ qt_add_qml_module(appquick-media-player
         qml/utils/Utils.qml
         qml/layouts/FramelessWindow.qml
         qml/layouts/CustomComponents/ColorImage.qml
-        qml/layouts/CustomComponents/IconButton.qml
         qml/layouts/CustomComponents/MultiStateItem.qml
         qml/layouts/CustomComponents/MouseStateItem.qml
         qml/layouts/CustomComponents/Seprator.qml

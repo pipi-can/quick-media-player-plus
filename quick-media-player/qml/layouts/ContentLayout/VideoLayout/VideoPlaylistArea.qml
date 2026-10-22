@@ -56,18 +56,35 @@ Item {
             font.letterSpacing: 1
         }
 
-        IconButton {
+        // 加号：原型 .ico 是 28 的按钮配 18 的图标，所以图标四周各留 5
+        Item {
             id: addButton
             width: 28
             height: 28
             y: 4
             anchors.right: parent.right
             anchors.rightMargin: 8
-            source: "qrc:/quick-media-player/resources/PlayWidgetIcons/add.svg"
-            normalColor: root.btnColor
-            hoverColor: root.btnHover
-            pressColor: root.btnPress
-            pressFill: root.pressFill
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 4
+                color: addMouse.mouseState === "press" ? root.pressFill : "transparent"
+            }
+
+            ColorImage {
+                anchors.fill: parent
+                anchors.margins: 5
+                source: "qrc:/quick-media-player/resources/PlayWidgetIcons/add.svg"
+                color: addMouse.color
+            }
+
+            MouseStateItem {
+                id: addMouse
+                anchors.fill: parent
+                normalColor: root.btnColor
+                hoverColor: root.btnHover
+                pressColor: root.btnPress
+            }
         }
     }
 

@@ -23,6 +23,10 @@ Item {
     readonly property color btnPress: paint("iconPress")
     readonly property color pressFill: paint("queueItemHover")
 
+    // 按钮 28、图标 18，取自原型 .ico 和 .icon，所以四周各留 5
+    readonly property real btnSize: 28
+    readonly property real iconInset: 5
+
     // 进度条 4、间距 8、按钮行 28、底下再留 8
     implicitHeight: 48
 
@@ -68,42 +72,115 @@ Item {
         anchors.rightMargin: 12
         anchors.topMargin: 8
 
-        IconButton {
+        // 上一个
+        Item {
             id: prevButton
+            width: root.btnSize
+            height: root.btnSize
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            source: "qrc:/quick-media-player/resources/PlayWidgetIcons/lastone.svg"
-            normalColor: root.btnColor
-            hoverColor: root.btnHover
-            pressColor: root.btnPress
-            pressFill: root.pressFill
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 4
+                color: prevMouse.mouseState === "press" ? root.pressFill : "transparent"
+            }
+
+            ColorImage {
+                anchors.fill: parent
+                anchors.margins: root.iconInset
+                source: "qrc:/quick-media-player/resources/PlayWidgetIcons/lastone.svg"
+                color: prevMouse.color
+            }
+
+            MouseStateItem {
+                id: prevMouse
+                anchors.fill: parent
+                normalColor: root.btnColor
+                hoverColor: root.btnHover
+                pressColor: root.btnPress
+            }
         }
 
-        IconButton {
+        // 播放和暂停共用这一个按钮，图标由 MultiStateItem 按 playing 切。
+        // 状态名说的是「正在播 / 已暂停」，画的是点下去会发生什么
+        MultiStateItem {
             id: playButton
+            width: root.btnSize
+            height: root.btnSize
             anchors.left: prevButton.right
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            // 暂停图标就是正在播，这版还没有播放器可切
-            source: root.playing
-                    ? "qrc:/quick-media-player/resources/PlayWidgetIcons/pause.svg"
-                    : "qrc:/quick-media-player/resources/PlayWidgetIcons/play.svg"
-            normalColor: root.btnColor
-            hoverColor: root.btnHover
-            pressColor: root.btnPress
-            pressFill: root.pressFill
+
+            stateCount: 2
+            defaultState: "playing"
+            currentState: root.playing ? "playing" : "paused"
+            stateInfos: [
+                { name: "playing" },
+                { name: "paused" }
+            ]
+            items: [pauseIcon, playIcon]
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 4
+                color: playMouse.mouseState === "press" ? root.pressFill : "transparent"
+            }
+
+            ColorImage {
+                id: pauseIcon
+                anchors.fill: parent
+                anchors.margins: root.iconInset
+                source: "qrc:/quick-media-player/resources/PlayWidgetIcons/pause.svg"
+                color: playMouse.color
+            }
+
+            ColorImage {
+                id: playIcon
+                anchors.fill: parent
+                anchors.margins: root.iconInset
+                source: "qrc:/quick-media-player/resources/PlayWidgetIcons/play.svg"
+                color: playMouse.color
+            }
+
+            MouseStateItem {
+                id: playMouse
+                anchors.fill: parent
+                normalColor: root.btnColor
+                hoverColor: root.btnHover
+                pressColor: root.btnPress
+            }
         }
 
-        IconButton {
+        // 下一个
+        Item {
             id: nextButton
+            width: root.btnSize
+            height: root.btnSize
             anchors.left: playButton.right
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            source: "qrc:/quick-media-player/resources/PlayWidgetIcons/nextone.svg"
-            normalColor: root.btnColor
-            hoverColor: root.btnHover
-            pressColor: root.btnPress
-            pressFill: root.pressFill
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 4
+                color: nextMouse.mouseState === "press" ? root.pressFill : "transparent"
+            }
+
+            ColorImage {
+                anchors.fill: parent
+                anchors.margins: root.iconInset
+                source: "qrc:/quick-media-player/resources/PlayWidgetIcons/nextone.svg"
+                color: nextMouse.color
+            }
+
+            MouseStateItem {
+                id: nextMouse
+                anchors.fill: parent
+                normalColor: root.btnColor
+                hoverColor: root.btnHover
+                pressColor: root.btnPress
+            }
         }
 
         Text {
@@ -117,15 +194,33 @@ Item {
         }
 
         // 从右往左排，中间剩下的空白就是原型里的 grow
-        IconButton {
+        Item {
             id: volumeButton
+            width: root.btnSize
+            height: root.btnSize
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            source: "qrc:/quick-media-player/resources/PlayWidgetIcons/volume.svg"
-            normalColor: root.btnColor
-            hoverColor: root.btnHover
-            pressColor: root.btnPress
-            pressFill: root.pressFill
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 4
+                color: volumeMouse.mouseState === "press" ? root.pressFill : "transparent"
+            }
+
+            ColorImage {
+                anchors.fill: parent
+                anchors.margins: root.iconInset
+                source: "qrc:/quick-media-player/resources/PlayWidgetIcons/volume.svg"
+                color: volumeMouse.color
+            }
+
+            MouseStateItem {
+                id: volumeMouse
+                anchors.fill: parent
+                normalColor: root.btnColor
+                hoverColor: root.btnHover
+                pressColor: root.btnPress
+            }
         }
 
         Text {

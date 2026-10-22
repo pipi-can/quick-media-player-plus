@@ -88,7 +88,7 @@ VideoPage                         Item，objectName: "video"
 | --- | --- |
 | 标题行 `head` | 高 40 = 上 4 + 按钮 28 + 下 8 |
 | 「播放队列」 | 左边距 8，15px 加粗，字距 1，和加号按钮垂直居中 |
-| 加号按钮 | `IconButton` 28×28，`y: 4`，右边距 8 |
+| 加号按钮 | 28×28（图标 18×18），`y: 4`，右边距 8 |
 | 列表 | `ListView`，从标题行底到父项底，行间距 4，裁剪超出部分 |
 | 行 | 高 58，圆角 8 |
 | 选中标记 | 宽 3、满高、圆角 1.5 的竖条，只显示在选中行，贴最左 |
@@ -124,7 +124,7 @@ VideoPage                         Item，objectName: "video"
 
 按钮行：高 28，贴进度条下 8，左右各内缩 12。
 
-- 从左往右：上一个（`lastone.svg`）、播放 / 暂停（`playing` 决定图标）、下一个（`nextone.svg`），都是 28×28 的 `IconButton`，互相间隔 8；再空 8 跟时间文字（12px）。
+- 从左往右：上一个（`lastone.svg`）、播放 / 暂停、下一个（`nextone.svg`），各自是一个 28×28 的 `Item`，互相间隔 8；再空 8 跟时间文字（12px）。播放键的根是 `MultiStateItem`，`playing` 为真显示暂停图标（`pause.svg`）、为假显示播放图标（`play.svg`）。
 - 从右往左：音量按钮（`volume.svg`）、倍速文字、模式文字，都是 12px 加粗、带上下 4 左右 8 的内边距。倍速和模式只接了 `MouseStateItem` 换颜色，**还没有下拉菜单**。
 - 中间剩下的空白就是原型里的 `.grow`。
 
@@ -163,10 +163,44 @@ VideoPage                         Item，objectName: "video"
 
 | 控件 | 谁在用 | 接口要点 |
 | --- | --- | --- |
-| `IconButton` | 队列的加号、控制条的 5 个按钮 | `source`、`normalColor` / `hoverColor` / `pressColor`、`pressFill`（按下垫的底色，透明就是不垫）、`iconInset`（默认 5）、`clicked()`。默认 28×28，图标按住 `iconInset` 内缩铺满 |
-| `MouseStateItem` | 队列每一行、倍速、模式、`IconButton` 内部 | `normalColor` / `hoverColor` / `pressColor`、三种光标、只读 `mouseState`（`normal` / `hover` / `press`）和 `color`、`clicked()`。开了 `hoverEnabled`；按着拖出去回到普通，不算 press；键盘 Enter / Space 也算点击；键盘走到才画焦点圈 |
+| `MouseStateItem` | 队列每一行、倍速、模式、每个图标按钮 | `normalColor` / `hoverColor` / `pressColor`、三种光标、只读 `mouseState`（`normal` / `hover` / `press`）和 `color`、`clicked()`。开了 `hoverEnabled`；按着拖出去回到普通，不算 press；键盘 Enter / Space 也算点击；键盘走到才画焦点圈 |
 | `MultiStateItem` | 播放区的五个状态 | `stateCount`、`stateInfos`（每项有 `name`）、`items`（和 `stateInfos` 顺序一一对应）、`defaultState`、`currentState`、`next()`。三个数量对不齐会报错 |
 | `ColorImage` | 所有单色图标 | `source` + `color`（给单色 svg 上色）、`fillMode`。原图只给 `ColorOverlay` 取样，自己不显示 |
+
+图标按钮不为它单独造控件，直接照 `TitleBar.qml` 里窗口控制那几个按钮的写法摊在用的地方：一个 `Item`（28×28）装三样东西 —— 按下垫底的 `Rectangle`、`ColorImage`（图标 18×18，所以四周各留 5）、压在最上面的 `MouseStateItem`。
+
+```qml
+// 图标按钮：28 的按钮配 18 的图标
+Item {
+    id: prevButton
+    width: 28
+    height: 28
+
+    // 原型 .ico:active 会垫一层底色
+    Rectangle {
+        anchors.fill: parent
+        radius: 4
+        color: prevMouse.mouseState === "press" ? root.pressFill : "transparent"
+    }
+
+    ColorImage {
+        anchors.fill: parent
+        anchors.margins: 5
+        source: "qrc:/quick-media-player/resources/PlayWidgetIcons/lastone.svg"
+        color: prevMouse.color
+    }
+
+    MouseStateItem {
+        id: prevMouse
+        anchors.fill: parent
+        normalColor: root.btnColor
+        hoverColor: root.btnHover
+        pressColor: root.btnPress
+    }
+}
+```
+
+一个按钮要在两张图标之间切的（播放 / 暂停、最大化 / 还原），把根换成 `MultiStateItem`，两个 `ColorImage` 放进 `items`、顺序和 `stateInfos` 对上，`currentState` 由外面给。现成例子：`TitleBar.qml` 的 `windowMode`、`VideoPlayControlArea.qml` 的 `playButton`。
 
 各区域切颜色的写法统一是：
 
