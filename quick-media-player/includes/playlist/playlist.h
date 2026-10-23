@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "playlist/utils/mediaprobe.h"
+#include "playlist/utils/mediafile.h"
 
 /**
  * @brief 整个播放器的播放队列
@@ -35,20 +35,6 @@ public:
         Shuffle = 4          // 随机播放：随机换一条，不会连着放同一条
     };
     Q_ENUM(PlayMode)
-
-    // 一条媒体文件。格式、编码这些由 addMedia 从探测结果里填；
-    // length 和 size 是显示用的字符串，还没定是在这边格式化还是 QML 拿原始值自己写
-    struct MediaFile {
-        QString name;        // 列表上显示的文件名
-        QString path;        // 播放器要打开的路径
-        QString length;      // 时长的显示文字，例如 "05:27"
-        QString format;
-        QString resolution;
-        QString codec;
-        QString decoder;
-        QString audio;
-        QString size;
-    };
 
     static PlayList &getInstance();
 

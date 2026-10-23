@@ -1,8 +1,8 @@
 #include "playlist/playlist.h"
 
-#include <QFileInfo>
 #include <QRandomGenerator>
 
+#include "playlist/utils/mediaprobe.h"
 #include "utils/logger.h"
 
 PlayList::PlayList()
@@ -22,25 +22,15 @@ PlayList &PlayList::getInstance()
 
 bool PlayList::addMedia(const QString &path)
 {
-    const MediaInfo info = MediaProbe::probe(path);
-    if (!info.opened || (!info.hasVideoStream && !info.hasAudioStream)) {
+    // 进哪条队列看探测出来的「有没有视频流」，不看后缀
+    const MediaFile file = MediaProbe::probe(path);
+    if (!file.opened || (!file.hasVideoStream && !file.hasAudioStream)) {
         LOG_WARNING("这个文件里没有能播的流，没进队列：%s", qPrintable(path));
         return false;
     }
 
-    // 有视频流就进视频队列，只有音频流才进音乐队列。后缀不参与判断
-    const MediaType type = info.hasVideoStream ? Video : Music;
-
-    MediaFile file;
-    file.path = path;
-    file.name = QFileInfo(path).fileName();
-    file.format = info.format;
-    file.resolution = info.resolution;
-    file.codec = info.videoCodec;
-    file.decoder = info.decoder;
-    file.audio = info.audioCodec;
-    // length、size 是显示用的字符串，等接播放层时再定这边格式化还是 QML 自己写
-    return appendMedia(type, file);
+    // 有视频流就进视频队列，只有音频流才进音乐队列
+    return appendMedia(file.hasVideoStream ? Video : Music, file);
 }
 
 bool PlayList::appendMedia(MediaType type, const MediaFile &file)
@@ -97,7 +87,7 @@ int PlayList::count(MediaType type) const
     return queue == nullptr ? 0 : static_cast<int>(queue->items.size());
 }
 
-PlayList::MediaFile PlayList::mediaAt(MediaType type, int index) const
+MediaFile PlayList::mediaAt(MediaType type, int index) const
 {
     const Queue *queue = queueFor(type);
     if (queue == nullptr || index < 0 || index >= static_cast<int>(queue->items.size()))
