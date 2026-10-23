@@ -23,21 +23,17 @@ struct MediaInfo
 };
 
 /**
- * @brief 媒体探测接口：问一个文件里有没有视频流
+ * @brief 媒体探测：打开一个文件，看里面有没有视频流
  *
- * 具体实现用 ffmpeg 开发库（libavformat）打开文件、遍历流，放在 playback 层；
- * 这里只定接口，PlayList 只认这个接口，不直接依赖 ffmpeg。
- * 实现只读文件头、不解码，谁实现谁负责把打开的句柄关掉。
+ * 拿路径直接用：MediaProbe::probe(path)。只读文件头、不解码，不持有状态。
  */
 class MediaProbe
 {
 public:
-    virtual ~MediaProbe() = default;
-
     /**
      * @brief 探测一个文件
      * @param path 本地文件路径
      * @retval 探测结果；opened 为 false 表示打不开（文件不在、格式不认）
      */
-    virtual MediaInfo probe(const QString &path) const = 0;
+    static MediaInfo probe(const QString &path);
 };

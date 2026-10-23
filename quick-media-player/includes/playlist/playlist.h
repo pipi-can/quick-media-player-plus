@@ -5,7 +5,7 @@
 
 #include <vector>
 
-class MediaProbe;
+#include "playlist/utils/mediaprobe.h"
 
 /**
  * @brief 整个播放器的播放队列
@@ -55,13 +55,10 @@ public:
     PlayList(const PlayList &) = delete;
     PlayList &operator=(const PlayList &) = delete;
 
-    // 判有没有视频流用的探测器，实现在 playback 层。PlayList 只借用，不负责它的生命周期
-    void setMediaProbe(MediaProbe *mediaProbe);
-
     /**
      * @brief 加一条媒体文件
      * @param path 文件路径。进哪条队列交给探测器判，不看后缀
-     * @retval true 加进队列了；false 没有探测器、文件打不开或里面没有能播的流
+     * @retval true 加进队列了；false 文件打不开或里面没有能播的流
      */
     bool addMedia(const QString &path);
 
@@ -158,5 +155,4 @@ private:
     Queue m_videoQueue;
     Queue m_musicQueue;
     MediaType m_activeType = None;
-    MediaProbe *m_mediaProbe = nullptr;
 };

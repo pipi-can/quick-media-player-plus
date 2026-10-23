@@ -3,7 +3,6 @@
 #include <QFileInfo>
 #include <QRandomGenerator>
 
-#include "playback/mediaprobe.h"
 #include "utils/logger.h"
 
 PlayList::PlayList()
@@ -23,12 +22,7 @@ PlayList &PlayList::getInstance()
 
 bool PlayList::addMedia(const QString &path)
 {
-    if (m_mediaProbe == nullptr) {
-        LOG_WARNING("还没挂媒体探测器，判不了有没有视频流：%s", qPrintable(path));
-        return false;
-    }
-
-    const MediaInfo info = m_mediaProbe->probe(path);
+    const MediaInfo info = MediaProbe::probe(path);
     if (!info.opened || (!info.hasVideoStream && !info.hasAudioStream)) {
         LOG_WARNING("这个文件里没有能播的流，没进队列：%s", qPrintable(path));
         return false;
@@ -58,11 +52,6 @@ bool PlayList::appendMedia(MediaType type, const MediaFile &file)
     queue->items.push_back(file);
     emit queueContentChanged(type);
     return true;
-}
-
-void PlayList::setMediaProbe(MediaProbe *mediaProbe)
-{
-    m_mediaProbe = mediaProbe;
 }
 
 bool PlayList::removeMedia(MediaType type, int index)
