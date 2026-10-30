@@ -18,7 +18,8 @@
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_coop-common.sh"
 
-usage() { sed -n '2,20p' "$0"; exit 1; }
+# 打印用法。默认退 1（"没给参数"这种用法错误）；-h/--help 走 usage 0。
+usage() { sed -n '2,20p' "$0"; exit "${1:-1}"; }
 
 find_md_files() {
   find "$COOP_ROOT" -type f \( -name '*.md' -o -name '*.markdown' \) -print0 | sort -z
@@ -98,7 +99,8 @@ search_keywords() {
 }
 
 case "${1:-}" in
-  ""|-h|--help|help) usage ;;
+  ""|help)            usage ;;
+  -h|--help)          usage 0 ;;
   --id)   shift; print_block "${1:-}" ;;
   --list) list_blocks ;;
   *)      search_keywords "$@" ;;

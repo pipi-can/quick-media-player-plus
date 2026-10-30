@@ -532,6 +532,14 @@ expect_rc "coop-find --id 打出原文" 0
 expect_has "原文里有字段" "[Index]: 1"
 run ./coop/coop-find.sh --list
 expect_rc "coop-find --list" 0
+# 帮助是"用户主动要的"，必须退 0；只有"没给参数"这种用法错误才退 1
+run ./coop/coop-find.sh --help
+expect_rc "coop-find --help → 退 0" 0
+expect_has "--help 打出用法" "coop-find.sh"
+run ./coop/coop-find.sh -h
+expect_rc "coop-find -h → 退 0" 0
+run ./coop/coop-find.sh
+expect_rc "coop-find 不带参数 → 退 1（用法错误）" 1
 
 run ./coop/coop-review.sh
 expect_rc "coop-review（审未提交改动）" 0
