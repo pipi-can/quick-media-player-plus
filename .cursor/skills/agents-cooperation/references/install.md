@@ -59,7 +59,11 @@ Cursor 直接读 `.cursor/rules/*.mdc` 和 `.cursor/skills/<名字>/SKILL.md`，
 .cursor/skills/agents-cooperation/assets/coop-init.sh
 ```
 
-它会在仓库根目录建 `agents-cooperation/`，把脚本复制进去，并写一个 `.gitignore`（忽略编号锁文件）。
+它会在仓库根目录建 `agents-cooperation/`，把脚本同步进去（逐个报告 **新建 / 更新 / 未变**），并写一个 `.gitignore`（忽略编号锁文件）。
+
+> **模板 vs 副本**：`.cursor/skills/agents-cooperation/assets/` 里的脚本是**正本（模板）**，
+> `agents-cooperation/` 里那份是**副本**。要改脚本改模板，然后重跑一次 `coop-init.sh` 同步过去——
+> **别直接改副本**，下次同步就会被覆盖。想确认两边一致：`./agents-cooperation/coop-init.sh --check-sync`。
 
 **先别急着装钩子**——第一次提交（把 rule / skill / 数据目录加进来）还没有 `Coop-Block` trailer，会被钩子拦。所以顺序是：
 
@@ -76,6 +80,8 @@ git commit -m "chore: 引入 agents-cooperation 协作流程"
 ```bash
 .cursor/skills/agents-cooperation/assets/coop-init.sh --hooks
 ```
+
+> `--hooks` **只装钩子，不碰脚本**。所以它要求 `agents-cooperation/` 已经铺好（没铺好会拒绝并让你先跑第 5 步）。
 
 装好后每次提交会自动：
 
@@ -138,6 +144,13 @@ Coop-Skip: 纯登记操作"
 
 ## 升级
 
-这套东西的"代码"就是 `.cursor/skills/agents-cooperation/`。目标仓库里更新就直接覆盖这个目录（`agents-cooperation/` 里的脚本用 `coop-init.sh` 重新复制一遍即可，块和预留表不会被动）。
+这套东西的"代码"就是 `.cursor/skills/agents-cooperation/`。目标仓库里更新就直接覆盖这个目录。
 
-改完脚本**一定先跑** `selftest.sh`。
+**改脚本的规矩**（`agents-cooperation/` 里的脚本是副本，会漂）：
+
+1. 只改**模板** `.cursor/skills/agents-cooperation/assets/` 下的脚本；
+2. 跑 `selftest.sh`（最后一行必须「失败 0」）；
+3. 重跑一次 `coop-init.sh`（无参数）把副本同步过去——它会报告 **新建 / 更新 / 未变**，并提醒你看 `git diff`；
+4. 提交前对账：`./agents-cooperation/coop-init.sh --check-sync`（有漂移就退 1）。
+
+> 块、`index-reserved.txt`、`_repo/` 都不会被同步碰到——同步只动脚本文件。

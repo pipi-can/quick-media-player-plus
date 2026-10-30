@@ -22,7 +22,7 @@ agents-cooperation/                  # 放仓库根目录（这个名字是固�
 ├── coop-new-block.sh                # 建新块
 ├── coop-record.sh                   # 回写分支 / commit
 ├── coop-hook.sh                     # git 钩子实际跑的东西
-├── coop-init.sh                     # 首次铺脚本（--hooks 装钩子）
+├── coop-init.sh                     # 铺脚本 / 装钩子 / 对账（副本，正本在 skill 的 assets/）
 ├── index-reserved.txt               # 编号预留表（要提交）
 ├── .gitignore                       # 忽略编号锁文件
 ├── _repo/                           # `_` 开头 = 不是协作块

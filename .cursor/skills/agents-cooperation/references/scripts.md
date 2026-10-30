@@ -2,7 +2,10 @@
 
 流程里凡是**机器能可靠判断**的步骤，都做成了脚本；剩下的是**必须人 / agent 判断**的，脚本不碰。
 
-脚本都在 `agents-cooperation/` 下（首次用 `coop-init.sh` 一次性铺好）。
+脚本都在 `agents-cooperation/` 下（首次用 `coop-init.sh` 铺好）。
+
+> ⚠️ 这些是**副本**：正本在 skill 的 `assets/` 里。改脚本请改正本，再用 `coop-init.sh` 同步；
+> `./agents-cooperation/coop-init.sh --check-sync` 可以随时对账。
 
 ## 总览
 
@@ -24,7 +27,7 @@
 | 10 | 回写 `[GitBranch]` / `[GitCommitIds]` | ✓ | `coop-record.sh <编号>` |
 | — | 校验所有块格式 | ✓ | `coop-lint.sh` |
 | — | 提交时自动跑校验 / 防删块 / 查 trailer | ✓ | `coop-init.sh --hooks` 装的钩子 |
-| — | 铺协作目录和脚本 | ✓ | `coop-init.sh` |
+| — | 铺协作目录和脚本 | ✓ | `coop-init.sh`（`--check-sync` 对账） |
 | — | 脚本本身的回归测试 | ✓ | `selftest.sh`（断言条数以它自己的输出为准） |
 | — | 给人类块补编号 | 半 ✓ | `get-index.sh` 出建议值，改文件由 agent 做 |
 
@@ -55,8 +58,12 @@
 ## 命令速查
 
 ```bash
-# 一次性铺好目录和脚本（--hooks 顺手装 git 钩子）
-.cursor/skills/agents-cooperation/assets/coop-init.sh [--hooks] [--force-hooks]
+# 一次性铺好协作目录，并把脚本同步进去（--hooks 只装 git 钩子，不碰脚本）
+.cursor/skills/agents-cooperation/assets/coop-init.sh
+.cursor/skills/agents-cooperation/assets/coop-init.sh --hooks
+
+# 对账：仓库里的脚本副本跟模板是否一致（改过脚本之后跑）
+./agents-cooperation/coop-init.sh --check-sync
 
 # 脚本自己的回归测试（改完脚本先跑）
 .cursor/skills/agents-cooperation/assets/selftest.sh
@@ -151,9 +158,15 @@ cd agents-cooperation
 - `coop-hook.sh commit-msg <消息文件>`：检查提交消息里**要么有 `Coop-Block: <编号>`、要么有 `Coop-Skip: <原因>`**（合并 / revert / fixup / squash 提交放行）。
 - 由 `coop-init.sh --hooks` 装的两个瘦壳子调用；也可以手工跑。
 
-### `coop-init.sh [--hooks] [--force-hooks]`（写）
+### `coop-init.sh [--hooks] [--force-hooks] [--check-sync]`（写）
 
-在本仓库根目录建 `agents-cooperation/`，复制全套脚本、写 `.gitignore`（忽略编号锁）、生成 `_repo/build.md` 模板（填构建 / 测试命令用的）。`--hooks` 装 `pre-commit` / `commit-msg`；已有同名钩子会跳过，`--force-hooks` 覆盖并备份。
+在本仓库根目录建 `agents-cooperation/`，把脚本**同步**进来（逐个报告 新建 / 更新 / 未变）、写 `.gitignore`（忽略编号锁）、生成 `_repo/build.md` 模板。
+
+- `--hooks`：**只**装 `pre-commit` / `commit-msg`（要求数据目录已经铺好）；已有别的同名钩子会跳过，`--force-hooks` 覆盖并备份；
+- `--check-sync`：**只对账不改文件**，比较仓库里的脚本副本和模板是否一致，有漂移退 1。
+
+> **模板 vs 副本**：模板是 `.cursor/skills/agents-cooperation/assets/`（正本），仓库里的 `agents-cooperation/*.sh` 是副本。
+> 改脚本只改模板，然后跑一次 `coop-init.sh` 同步——别直接改副本，下次同步会被覆盖。
 
 ### `selftest.sh`（只读工作区）
 

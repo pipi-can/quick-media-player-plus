@@ -15,13 +15,18 @@ cleanup() { rm -rf "$T"; }
 trap cleanup EXIT
 cd "$T" || exit 2
 
-# 这个目录里没有 selftest.sh 自己，免得被 coop-init 的 *.sh 一起复制
+# 这个目录里没有 selftest.sh 自己，免得被 coop-init 的 *.sh 一起复制。
+# 按真实约定的位置放（.cursor/skills/.../assets），这样 coop-init --check-sync 能找到"模板"。
 mkdir -p "$T/scripts"
 for f in "$SRC"/*.sh; do
   [[ "$(basename "$f")" == "selftest.sh" ]] && continue
   cp "$f" "$T/scripts/"
 done
 chmod +x "$T/scripts"/*.sh
+TPL="$T/.cursor/skills/agents-cooperation/assets"
+mkdir -p "$TPL"
+cp "$T/scripts"/*.sh "$TPL/"
+chmod +x "$TPL"/*.sh
 
 pass=0
 fail=0
@@ -35,6 +40,7 @@ run() { out="$("$@" 2>&1)"; rc=$?; }
 expect_rc()  { if [[ "$rc" == "$2" ]]; then ok "$1"; else bad "$1" "期望退出码 $2，实际 $rc；输出：$out"; fi; }
 expect_eq()  { if [[ "$2" == "$3" ]]; then ok "$1"; else bad "$1" "期望 [$2]，实际 [$3]"; fi; }
 expect_has() { if [[ "$out" == *"$2"* ]]; then ok "$1"; else bad "$1" "输出里没有 [$2]；输出：$out"; fi; }
+expect_no()  { if [[ "$out" != *"$2"* ]]; then ok "$1"; else bad "$1" "输出里不该有 [$2]；输出：$out"; fi; }
 
 reset_coop() {
   rm -rf "$T/coop"; mkdir -p "$T/coop"
@@ -299,6 +305,9 @@ expect_rc "删人类编号（ren-1）的块也拦下" 1
 
 # ---------------------------------------------------------------- coop-init --hooks
 section "coop-init --hooks（真装钩子并试提交）"
+# 按 install.md 的顺序：先把目录铺好，再单独装钩子（--hooks 不再顺带复制脚本）
+run "$T/scripts/coop-init.sh"
+expect_rc "先跑一次无参数 coop-init" 0
 run "$T/scripts/coop-init.sh" --hooks
 expect_rc "coop-init --hooks 退出码 0" 0
 if [[ -f "$T/.git/hooks/pre-commit" && -f "$T/.git/hooks/commit-msg" ]]; then
@@ -323,6 +332,52 @@ run gitq commit -m "docs: 修错别字
 
 Coop-Skip: 只改了文档"
 expect_rc "真实提交带 Coop-Skip → 通过" 0
+
+# ---------------------------------------------------------------- coop-init 的同步规矩
+section "coop-init：脚本同步要显式、可对账，--hooks 不许碰脚本"
+reset_coop
+rm -rf "$T/agents-cooperation"       # 从零铺，才能断言"新建"
+run "$T/scripts/coop-init.sh"
+expect_rc "无参数跑 coop-init" 0
+expect_has "报告了'新建'" "新建"
+# 再跑一次应该"未变"，不该重复报新建
+run "$T/scripts/coop-init.sh"
+expect_rc "再跑一次 coop-init" 0
+expect_has "第二次全是'未变'" "未变 10 个"
+expect_no "第二次不再报'新建'" "新建"
+
+# 手改仓库副本 → --check-sync 必须抓到漂移
+printf '\n# 手改的\n' >> "$T/agents-cooperation/coop-lint.sh"
+run "$T/agents-cooperation/coop-init.sh" --check-sync
+expect_rc "副本被手改 → --check-sync 失败" 1
+expect_has "点出是哪个文件漂了" "漂移: coop-lint.sh"
+
+# 从模板重新同步 → 只更新那一个，并且提醒看 git diff
+run "$T/scripts/coop-init.sh"
+expect_rc "重新同步" 0
+expect_has "报告'更新 1 个'" "更新 1 个: coop-lint.sh"
+expect_has "提醒先看 git diff" "git -C"
+
+run "$T/agents-cooperation/coop-init.sh" --check-sync
+expect_rc "同步后 --check-sync 通过" 0
+expect_has "明确说一致" "与模板一致"
+
+# --hooks 不许动脚本（这是它以前的副作用）
+before_sum="$(cat "$T/agents-cooperation"/*.sh | md5sum)"
+run "$T/scripts/coop-init.sh" --hooks
+expect_rc "--hooks 单独跑" 0
+after_sum="$(cat "$T/agents-cooperation"/*.sh | md5sum)"
+if [[ "$before_sum" == "$after_sum" ]]; then
+  ok "--hooks 没有改任何脚本"
+else
+  bad "--hooks 动了脚本（回归了！）"
+fi
+
+# 数据目录还没铺好就跑 --hooks → 拒绝并指路
+rm -rf "$T/agents-cooperation"
+run "$T/scripts/coop-init.sh" --hooks
+expect_rc "没铺目录就跑 --hooks → 拒绝" 1
+expect_has "告诉先跑无参数版本" "先跑一次不带参数的 coop-init.sh"
 
 # ---------------------------------------------------------------- 字段读写（曾经的静默失败）
 section "字段读写：coop-record 不能再'报成功却没写'"

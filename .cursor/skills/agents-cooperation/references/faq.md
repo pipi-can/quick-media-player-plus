@@ -242,7 +242,10 @@ D 档（<24）就**先改再提交**，不用问。
 .cursor/skills/agents-cooperation/assets/coop-init.sh
 ```
 
-它会在仓库根目录建 `agents-cooperation/`，把脚本都复制进去。然后再 `coop-new-block.sh` 建第一个块。别自己另写一份脚本。
+它会在仓库根目录建 `agents-cooperation/`，把脚本同步进去。然后再 `coop-new-block.sh` 建第一个块。别自己另写一份脚本。
+
+> 里面的脚本是**副本**——正本是 skill 的 `assets/`。要改脚本就改正本，然后重跑 `coop-init.sh` 同步过去
+> （它会报告改了哪几个），再用 `--check-sync` 对账。直接改副本的话，下次同步会被覆盖。
 
 ### Q：目录结构是死的吗？功能文件夹必须叫 `playback` 这种？
 

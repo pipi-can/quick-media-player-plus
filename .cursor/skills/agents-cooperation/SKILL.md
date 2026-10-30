@@ -106,7 +106,7 @@ agents-cooperation/
 ├── coop-new-block.sh     # 建新块（取号加锁，防并发撞号）
 ├── coop-record.sh        # 回写分支 / commit
 ├── coop-hook.sh          # git 钩子实际跑的东西
-├── coop-init.sh          # 首次铺好这些脚本（--hooks 装钩子）
+├── coop-init.sh          # 铺脚本 / 装钩子 / --check-sync 对账（副本，正本在 skill 的 assets/）
 ├── index-reserved.txt    # 编号预留表（要提交，防跨工作区撞号）
 ├── .gitignore            # 忽略编号锁文件
 ├── _repo/                # ← `_` 开头 = **不是协作块**，放仓库级说明
@@ -400,8 +400,12 @@ commit 的 sha 只有提交之后才知道，所以默认两步：
 工具都在 `agents-cooperation/` 下。**首次启用**先铺一次：
 
 ```bash
-.cursor/skills/agents-cooperation/assets/coop-init.sh --hooks   # --hooks 顺手装 pre-commit / commit-msg
+.cursor/skills/agents-cooperation/assets/coop-init.sh           # 铺目录 + 同步脚本
+.cursor/skills/agents-cooperation/assets/coop-init.sh --hooks    # 只装 pre-commit / commit-msg
 ```
+
+> `agents-cooperation/` 里的脚本是**副本**，正本是 skill 的 `assets/`。改了脚本要重跑 `coop-init.sh` 同步，
+> 再用 `./agents-cooperation/coop-init.sh --check-sync` 对账；别直接改副本。
 
 之后常用：
 
