@@ -424,6 +424,32 @@ run "$T/scripts/coop-docs-check.sh" "$clean"
 expect_rc "干净 → 退 0" 0
 expect_no "不冤枉跨行 code span" "行内反引号没配对"
 
+# 合法的块结构也不能被冤枉：缩进 4 格是"缩进代码块"，里面的 ``` 只是字面文本，不是围栏
+styles="$T/probe-styles"; rm -rf "$styles"; mkdir -p "$styles"
+printf '# t\n\n演示一个围栏标记：\n\n    ```bash\n    缩进代码块里的字面文本\n' > "$styles/indented.md"
+printf '# t\n\n1. 步骤：\n\n   ```bash\n   echo hi\n   ```\n'                  > "$styles/listitem.md"
+run "$T/scripts/coop-docs-check.sh" "$styles"
+expect_rc "缩进代码块 / 列表内围栏（≤3 格）不被冤枉 → 退 0" 0
+expect_no "没把缩进 4 格的围栏标记当成围栏" "代码围栏没闭合"
+# ……但别修过头：缩进 ≤3 的真围栏没闭合，仍然要报
+printf '# t\n\n   ```bash\n   echo hi\n' > "$styles/listitem-bad.md"
+run "$T/scripts/coop-docs-check.sh" "$styles/listitem-bad.md"
+expect_rc "缩进 3 格的围栏没闭合 → 照样报" 1
+expect_has "报在围栏起始行" "代码围栏没闭合"
+
+# 代码块里的"字面示例"不能拿来判错：围栏里的示例链接、缩进代码块里的示例链接
+printf '# t\n\n示例：\n\n```markdown\n见 [思路](playback/实现思路.md) 和 [示例](nope.md)\n```\n' > "$styles/fenced-link.md"
+printf '# t\n\n    [也是示例](nope.md)\n'                                            > "$styles/indented-link.md"
+run "$T/scripts/coop-docs-check.sh" "$styles/fenced-link.md" "$styles/indented-link.md"
+expect_rc "代码块里的示例链接不被判错 → 退 0" 0
+expect_no "没把围栏里的示例链接当断链" "内部链接指向不存在的文件"
+# 行内 code span 里写的示例链接也不算链接；同一行 span 外的真断链仍要报
+printf '# t\n\n写法是 `[标题](路径)`；真的断链在 [这里](nope.md)。\n' > "$styles/inline-link.md"
+run "$T/scripts/coop-docs-check.sh" "$styles/inline-link.md"
+expect_rc "同一行：span 里的示例不算、span 外的真断链要报 → 退 1" 1
+expect_has "只报 span 外那条" "内部链接指向不存在的文件：nope.md"
+expect_no "没把 span 里的示例当链接" "内部链接指向不存在的文件：路径"
+
 # 显式给的路径不存在 → 别静默通过
 run "$T/scripts/coop-docs-check.sh" "$clean/不存在.md"
 expect_rc "显式路径不存在 → 退 1" 1

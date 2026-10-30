@@ -13,13 +13,17 @@
 #
 # 查这些（每条都定位到 文件:行）：
 #   1) *.sh        bash -n 语法
-#   2) Markdown    代码围栏是否闭合（按字符和长度，``` 和 ~~~ 不混用）
+#   2) Markdown    代码：围栏是否闭合（按字符和长度，``` 和 ~~~ 不混用；围栏最多缩进 3 格，
+#                  缩进 4 格是"缩进代码块"，里面的 ``` 只是字面文本——这条判错过，才补上的）
 #   3) Markdown    行内反引号按 CommonMark 配对：长度 N 的串要由下一个长度恰好为 N 的串闭合
 #                  （允许跨行配对；所以 ```` ``` ```` 这种包法合法，"行内裸三连反引号"会被判错）
 #   4) Markdown    表格每行列数和表头一致
 #   5) Markdown    内部链接指向的文件存在
 #   6) frontmatter 用 --- 包裹；SKILL.md 要 name + description，.mdc 要 description；
 #                  值要符合 YAML 明文标量规则（明文里出现 ': ' 或 ' #' 会被当成新键 / 注释）
+#
+# 3) / 4) / 5) 只看**正文行**：围栏内和缩进代码块里的都算代码——里面的反引号、`|`、`[x](y)`
+# 都是举例用的字面文本，拿它们判错就是冤枉人（这是把自己的文档跑出误报之后补上的规则）。
 #
 # 退出码：0 = 没查出问题；1 = 有问题；2 = 用法错。
 #
@@ -35,7 +39,7 @@ for a in "$@"; do
   case "$a" in
     -q)        quiet=1 ;;
     --all)     all=1 ;;
-    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,31p' "$0"; exit 0 ;;
     -*)        echo "未知参数: $a" >&2; exit 2 ;;
     *)         want+=("$a") ;;
   esac
@@ -88,6 +92,7 @@ done
 
 say "体检：$((${#sh[@]})) 个脚本 + $((${#md[@]})) 份文档…"
 for t in ${missing[@]+"${missing[@]}"}; do fail "$t  路径不存在"; done
+
 # ---- 1) bash -n ----
 # 用 LC_ALL=C 跑：中文 locale 下 bash 会说"行4"，英文才是 "line 4"，抽行号更稳。
 for f in ${sh[@]+"${sh[@]}"}; do
@@ -97,53 +102,62 @@ for f in ${sh[@]+"${sh[@]}"}; do
   fi
 done
 
-# ---- 2) 围栏闭合 ----
-fence_scan() {
+# ---- 2) 先判定"哪些行是正文"，后面 3) / 4) / 5) 共用 ----
+#
+# 为什么非要有这一步：代码块里的东西是**举例用的字面文本**，拿它们判错就是冤枉人。已经冤枉过两次：
+#   - 四空格缩进的"缩进代码块"里写了一行 ``` → 被当成围栏；
+#   - 围栏里的行内示例反引号 / 示例链接 → 被当成正文检查。
+# 所以规则统一成一条：**围栏内 + 缩进代码块内的行 = 代码，不参与后面三项**。
+# 顺带好处：围栏状态机只有这一处，不会出现"两个函数对围栏的判断不一样"。
+#
+# 输出：每行 "真实行号<TAB>正文"（正文里含 Tab 也不影响，按**第一个** Tab 切）。
+# 围栏没闭合时，最后多吐一行 "!<TAB>围栏起始行"，由调用方报错。
+prose_scan() {
   awk '
-    function run(s,   t) {
-      t = s; sub(/^[ \t]*/, "", t)
-      if (match(t, /^`{3,}/)) return substr(t, RSTART, RLENGTH)
-      if (match(t, /^~{3,}/)) return substr(t, RSTART, RLENGTH)
-      return ""
+    # 围栏最多缩进 3 格（CommonMark）；缩进 4 格是缩进代码块，里面的 ``` 只是字面文本
+    function fence(s,   m, ind) {
+      if (!match(s, /^[ \t]*(`{3,}|~{3,})/)) return ""
+      m = substr(s, RSTART, RLENGTH)
+      ind = length(m)
+      sub(/^[ \t]*/, "", m)
+      ind -= length(m)
+      if (ind > 3) return ""
+      return m
     }
     {
-      r = run($0)
-      if (r == "") next
-      if (!open) { open = 1; oc = substr(r, 1, 1); olen = length(r); start = NR }
-      else if (substr(r, 1, 1) == oc && length(r) >= olen) { open = 0 }
-    }
-    END { if (open) printf "%d\n", start }
-  ' "$1"
-}
-
-# ---- 3) 行内反引号配对 ----
-# CommonMark 真相：反引号串**可以跨行配对**（一个 code span 能横跨换行）。
-# 所以必须把整篇文档（围栏之外）的反引号串按出现顺序排成一条队列，逐个找"下一个同长度的串"。
-# 只有找不到同长度串的那个才算问题——**别按行独立判断**，那会冤枉合法的跨行写法。
-backtick_scan() {
-  awk '
-    function run(s,   t) {
-      t = s; sub(/^[ \t]*/, "", t)
-      if (match(t, /^`{3,}/)) return substr(t, RSTART, RLENGTH)
-      if (match(t, /^~{3,}/)) return substr(t, RSTART, RLENGTH)
-      return ""
-    }
-    {
-      r = run($0)
+      r = fence($0)
       if (r != "") {
-        if (!open) { open = 1; oc = substr(r, 1, 1); olen = length(r) }
+        if (!open) { open = 1; oc = substr(r, 1, 1); olen = length(r); fstart = NR }
         else if (substr(r, 1, 1) == oc && length(r) >= olen) { open = 0 }
         next
       }
       if (open) next
-      L = length($0); i = 1
+      if ($0 ~ /^\t/ || $0 ~ /^[ \t][ \t][ \t][ \t]/) next   # 缩进代码块
+      printf "%d\t%s\n", NR, $0
+    }
+    END { if (open) printf "!\t%d\n", fstart }
+  ' "$1"
+}
+
+# ---- 3) 行内反引号配对（吃 prose_scan 的输出）----
+# CommonMark 真相：反引号串**可以跨行配对**（一个 code span 能横跨换行）。
+# 所以要按出现顺序排成一条队列，逐个找"下一个同长度的串"；只有找不到同长度串的才算问题。
+# 千万别按行独立判断——那会把合法的跨行写法冤枉掉（真实踩过）。
+backtick_find() {
+  awk '
+    {
+      p = index($0, "\t")
+      nr = substr($0, 1, p - 1)
+      if (nr == "!") next
+      s = substr($0, p + 1)
+      i = 1; L = length(s)
       while (i <= L) {
-        c = substr($0, i, 1)
+        c = substr(s, i, 1)
         if (c == "\\") { i += 2; continue }
         if (c == "`") {
           j = i
-          while (j <= L && substr($0, j, 1) == "`") j++
-          n++; rlen[n] = j - i; rlin[n] = NR
+          while (j <= L && substr(s, j, 1) == "`") j++
+          n++; rlen[n] = j - i; rlin[n] = nr
           i = j
           continue
         }
@@ -159,43 +173,82 @@ backtick_scan() {
         j = found ? found + 1 : j + 1
       }
     }
-  ' "$1"
+  '
 }
 
-# ---- 4) 表格列数一致 ----
-table_scan() {
+# ---- 4) 表格列数一致（吃 prose_scan 的输出）----
+table_find() {
   awk '
-    function cells(line,   t, n, a) {
+    function cells(line,   t, a) {
       t = line
       sub(/^[ \t]*\|/, "", t); sub(/\|[ \t]*$/, "", t)
       gsub(/\\\|/, "\001", t)
-      n = split(t, a, "|")
-      return n
+      return split(t, a, "|")
     }
     function flush(   i) {
       if (rows > 0) for (i = 1; i <= rows; i++)
         if (col[i] != col[1]) printf "%d\t%d\t%d\n", ln[i], col[i], col[1]
       rows = 0
     }
-    /^[ \t]*\|.*\|[ \t]*$/ { rows++; ln[rows] = NR; col[rows] = cells($0); next }
-    { flush() }
+    {
+      p = index($0, "\t")
+      nr = substr($0, 1, p - 1)
+      if (nr == "!") next
+      s = substr($0, p + 1)
+      if (s ~ /^[ \t]*\|.*\|[ \t]*$/) { rows++; ln[rows] = nr; col[rows] = cells(s); next }
+      flush()
+    }
     END { flush() }
-  ' "$1"
+  '
 }
 
-# ---- 5) 内部链接 ----
-link_check() {
-  local f="$1" dir entry n t
-  dir="$(dirname "$f")"
-  while IFS= read -r entry; do
-    [[ -z "$entry" ]] && continue
-    n="${entry%%:*}"
-    t="${entry#*:}"
-    t="${t#](}"; t="${t%)}"
-    case "$t" in ''|http*|https*|mailto:*|\#*) continue ;; esac
-    t="${t%%#*}"
-    [[ -e "$dir/$t" ]] || fail "$f:$n  内部链接指向不存在的文件：$t"
-  done < <(grep -noE '\]\([^()[:space:]]+\)' "$f" 2>/dev/null || true)
+# ---- 5) 内部链接（吃 prose_scan 的输出）----
+# 两种"不是链接"的情形都要排除，否则全是误报：
+#   a) 围栏 / 缩进代码块里的示例 → prose_scan 已经排掉了；
+#   b) 行内 code span 里写的示例（比如"写法是 `[标题](路径)`"）→ 这里先把 span 抹掉再找链接。
+#      span 是按**行内**配对处理的（跨行 span 里写链接会漏掉，这条近似是有意认下的）。
+link_find() {
+  awk '
+    function strip_spans(s,   i, L, c, j, rl, rp, cnt, k, found, out, from, to, pad, t) {
+      L = length(s); cnt = 0; i = 1
+      while (i <= L) {
+        c = substr(s, i, 1)
+        if (c == "\\") { i += 2; continue }
+        if (c == "`") {
+          j = i
+          while (j <= L && substr(s, j, 1) == "`") j++
+          cnt++; rl[cnt] = j - i; rp[cnt] = i
+          i = j
+          continue
+        }
+        i++
+      }
+      out = s
+      j = 1
+      while (j <= cnt) {
+        found = 0
+        for (k = j + 1; k <= cnt; k++) if (rl[k] == rl[j]) { found = k; break }
+        if (found) {
+          from = rp[j]; to = rp[found] + rl[found] - 1
+          pad = ""
+          for (t = 1; t <= to - from + 1; t++) pad = pad " "
+          out = substr(out, 1, from - 1) pad substr(out, to + 1)
+        }
+        j = found ? found + 1 : j + 1
+      }
+      return out
+    }
+    {
+      p = index($0, "\t")
+      nr = substr($0, 1, p - 1)
+      if (nr == "!") next
+      s = strip_spans(substr($0, p + 1))
+      while (match(s, /\]\([^()[:space:]]+\)/)) {
+        printf "%s\t%s\n", nr, substr(s, RSTART + 2, RLENGTH - 3)
+        s = substr(s, RSTART + RLENGTH)
+      }
+    }
+  '
 }
 
 # ---- 6) frontmatter ----
@@ -259,18 +312,31 @@ fm_check() {
 
 # ---- 跑 ----
 for f in ${md[@]+"${md[@]}"}; do
-  s="$(fence_scan "$f")"
-  [[ -n "$s" ]] && fail "$f:$s  代码围栏没闭合（从这里开始）"
+  # 正文流只算一次，三项检查共用（顺带在这里报未闭合的围栏）
+  prose=()
+  while IFS= read -r line; do
+    if [[ "${line%%$'\t'*}" == "!" ]]; then
+      fail "$f:${line#*$'\t'}  代码围栏没闭合（从这里开始）"
+      continue
+    fi
+    prose+=("$line")
+  done < <(prose_scan "$f")
 
   while IFS=$'\t' read -r n len; do
     [[ -n "${n:-}" ]] && fail "$f:$n  行内反引号没配对（长度 $len 的串找不到同长度的闭合串）"
-  done < <(backtick_scan "$f")
+  done < <(printf '%s\n' ${prose[@]+"${prose[@]}"} | backtick_find)
 
   while IFS=$'\t' read -r n got exp; do
     [[ -n "${n:-}" ]] && fail "$f:$n  表格这行 $got 列，表头 $exp 列"
-  done < <(table_scan "$f")
+  done < <(printf '%s\n' ${prose[@]+"${prose[@]}"} | table_find)
 
-  link_check "$f"
+  while IFS=$'\t' read -r n t; do
+    [[ -z "${n:-}" ]] && continue
+    case "$t" in ''|http*|https*|mailto:*|\#*) continue ;; esac
+    t="${t%%#*}"
+    [[ -e "$(dirname "$f")/$t" ]] || fail "$f:$n  内部链接指向不存在的文件：$t"
+  done < <(printf '%s\n' ${prose[@]+"${prose[@]}"} | link_find)
+
   fm_check "$f"
 done
 

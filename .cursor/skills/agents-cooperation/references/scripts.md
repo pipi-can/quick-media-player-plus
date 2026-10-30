@@ -162,11 +162,15 @@ cd agents-cooperation
 体检**文件语法**（不管块格式，那个归 `coop-lint.sh`）。查 6 类，每条都定位到 `文件:行`：
 
 1. `*.sh` 的 `bash -n` 语法；
-2. Markdown 代码围栏是否闭合（按字符和长度，```` ``` ```` 与 `~~~` 不混用）；
+2. Markdown 代码围栏是否闭合（按字符和长度，```` ``` ```` 与 `~~~` 不混用；**围栏最多缩进 3 格**，
+   缩进 4 格是"缩进代码块"，里面的三连反引号只是字面文本）；
 3. 行内反引号按 CommonMark 配对（**允许跨行**：长度 N 的串要由下一个长度恰好为 N 的串闭合）；
 4. 表格每行列数和表头一致；
 5. 内部链接指向的文件存在；
 6. frontmatter：`SKILL.md` 要 `name` + `description`，`.mdc` 要 `description`，值要符合 YAML 明文标量规则。
+
+第 3～5 项**只看正文行**：围栏内和缩进代码块里的内容算代码——里面的反引号、`|`、`[x](y)` 都是
+举例用的字面文本，拿来判错就是冤枉人。
 
 - 退出码：0 没问题 / 1 有问题 / 2 用法错；
 - **默认只查"我们自己的"文件**：`agents-cooperation/`、`.cursor/rules/agents-cooperation.mdc`、本 skill 的 `SKILL.md` / `references/` / `assets/`。
