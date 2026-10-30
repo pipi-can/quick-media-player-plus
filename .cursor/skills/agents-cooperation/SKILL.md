@@ -80,7 +80,8 @@ Coop-Skip: 只改了文档错别字，无行为变化
         不要当成"做完了"（见 references/build-verify.md）
 - [ ] 12. **自评打分**：./coop-review.sh → 按 references/code-review.md 打四个维度，
         把「验收对照 + 分数表 + 我最不放心的三点」发给用户；C 档先问、D 档先改（见 references/code-review.md 的等级处置）
-- [ ] 13. ./coop-lint.sh                            # 提交前校验格式
+- [ ] 13. ./coop-lint.sh                            # 提交前校验块格式
+- [ ] 13b. ./coop-docs-check.sh                     # 提交前体检文件语法（钩子也会自动跑）
 - [ ] 14. git 提交：标题=实现了什么，正文=实现思路，尾部带 Coop-* trailer（块和代码一起提交）
 - [ ] 15. ./coop-record.sh <编号>                   # 把这次提交回写进块
 - [ ] 16. 提交这次回写
@@ -101,6 +102,7 @@ agents-cooperation/
 ├── get-index.sh          # 编号 + 块清单（只读）
 ├── coop-find.sh          # 按关键词 / 编号找块（只读）——删模块前必用
 ├── coop-lint.sh          # 格式校验（只读）
+├── coop-docs-check.sh    # 文件语法体检：脚本 / Markdown / frontmatter / 链接（只读）
 ├── coop-history.sh       # 拉某个块的提交历史（只读）
 ├── coop-review.sh        # 摆出自评要用的材料（只读）
 ├── coop-new-block.sh     # 建新块（取号加锁，防并发撞号）
@@ -415,7 +417,8 @@ commit 的 sha 只有提交之后才知道，所以默认两步：
 ./agents-cooperation/coop-find.sh --id <编号>                             # 只读：打印块原文（方便贴给用户）
 ./agents-cooperation/coop-history.sh <编号>                              # 只读：某块的提交演进
 ./agents-cooperation/coop-review.sh [<编号>] [--diff]                    # 只读：摆出自评材料
-./agents-cooperation/coop-lint.sh [-q]                                   # 只读：格式校验
+./agents-cooperation/coop-lint.sh [-q]                                   # 只读：块格式校验
+./agents-cooperation/coop-docs-check.sh [--all] [<路径>…]                # 只读：文件语法体检
 ./agents-cooperation/coop-new-block.sh -f <功能> -t "<标题>" [-d <文档>] [-a <作者>]
 ./agents-cooperation/coop-record.sh <编号> [sha]                         # 回写分支 / commit
 ```

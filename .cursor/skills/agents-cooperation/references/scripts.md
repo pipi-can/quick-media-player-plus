@@ -26,7 +26,8 @@
 | 9 | 写提交消息 | ✗ 判断 | 模板见 [commit-messages.md](commit-messages.md)；**带没带 trailer 由钩子兜** |
 | 10 | 回写 `[GitBranch]` / `[GitCommitIds]` | ✓ | `coop-record.sh <编号>` |
 | — | 校验所有块格式 | ✓ | `coop-lint.sh` |
-| — | 提交时自动跑校验 / 防删块 / 查 trailer | ✓ | `coop-init.sh --hooks` 装的钩子 |
+| — | 校验**文件语法**（脚本 / Markdown / frontmatter / 链接） | ✓ | `coop-docs-check.sh` |
+| — | 提交时自动跑校验 / 防删块 / 查 trailer / 体检 | ✓ | `coop-init.sh --hooks` 装的钩子 |
 | — | 铺协作目录和脚本 | ✓ | `coop-init.sh`（`--check-sync` 对账） |
 | — | 脚本本身的回归测试 | ✓ | `selftest.sh`（断言条数以它自己的输出为准） |
 | — | 给人类块补编号 | 半 ✓ | `get-index.sh` 出建议值，改文件由 agent 做 |
@@ -90,8 +91,12 @@ cd agents-cooperation
 ./coop-record.sh 3                 # 回写提交（sha 默认取 HEAD）
 ./coop-record.sh 3 d9fe736
 
-./coop-lint.sh                    # 校验格式
+./coop-lint.sh                    # 校验块格式
 ./coop-lint.sh -q                 # 只说问题
+
+./coop-docs-check.sh              # 体检文件语法（脚本 + Markdown + frontmatter + 链接）
+./coop-docs-check.sh --all        # 连别的 skill 一起查
+./coop-docs-check.sh <路径>…      # 只查指定文件 / 目录
 
 ./coop-hook.sh pre-commit         # 钩子实际跑的东西（一般不用手调）
 ```
@@ -152,9 +157,25 @@ cd agents-cooperation
 - **错误**（退出码 1）：必填字段缺失、`[Valid]` 取值不对、AI 块没有纯数字编号、纯数字编号撞号、人类编号形状不对、`[GitBranch]` 含空格、`[GitCommitIds]` 不是合法短 sha 数组、文档没放在功能文件夹下、围栏代码块没闭合、字段名大小写不对、用了全角冒号、还留着 `coop-new-block.sh` 的 TODO 占位符。
 - **警告**（不影响退出码）：字段被缩进了、同一功能里 `[Title]` 重名、`.md` 里一个块都没解析到、`[GitBranch]` 是 `HEAD`（detached HEAD）。
 
+### `coop-docs-check.sh [-q] [--all] [<路径>…]`（只读）
+
+体检**文件语法**（不管块格式，那个归 `coop-lint.sh`）。查 6 类，每条都定位到 `文件:行`：
+
+1. `*.sh` 的 `bash -n` 语法；
+2. Markdown 代码围栏是否闭合（按字符和长度，```` ``` ```` 与 `~~~` 不混用）；
+3. 行内反引号按 CommonMark 配对（**允许跨行**：长度 N 的串要由下一个长度恰好为 N 的串闭合）；
+4. 表格每行列数和表头一致；
+5. 内部链接指向的文件存在；
+6. frontmatter：`SKILL.md` 要 `name` + `description`，`.mdc` 要 `description`，值要符合 YAML 明文标量规则。
+
+- 退出码：0 没问题 / 1 有问题 / 2 用法错；
+- **默认只查"我们自己的"文件**：`agents-cooperation/`、`.cursor/rules/agents-cooperation.mdc`、本 skill 的 `SKILL.md` / `references/` / `assets/`。
+  这是刻意的——连 `.cursor/skills/` 下**别的 skill** 一起查，别人的文档不合规就会挡住本仓库的提交（误伤）。要全查加 `--all`。
+- **只做结构检查**：它不证明"文档意思写对了"，也不等于 shellcheck（未定义变量、误引用这类查不出来）。绿了只代表"没犯这些低级错"。
+
 ### `coop-hook.sh`（给 git 钩子用）
 
-- `coop-hook.sh pre-commit`：跑 lint + 检查有没有**删掉**块（约定：块只作废不删除，删了编号会被回收、反查串台）；
+- `coop-hook.sh pre-commit`：跑 lint + 检查有没有**删掉**块（约定：块只作废不删除，删了编号会被回收、反查串台）+ 跑 `coop-docs-check.sh`（文件语法体检）；
 - `coop-hook.sh commit-msg <消息文件>`：检查提交消息里**要么有 `Coop-Block: <编号>`、要么有 `Coop-Skip: <原因>`**（合并 / revert / fixup / squash 提交放行）。
 - 由 `coop-init.sh --hooks` 装的两个瘦壳子调用；也可以手工跑。
 

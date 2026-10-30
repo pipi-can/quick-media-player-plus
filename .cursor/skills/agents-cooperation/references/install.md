@@ -88,6 +88,8 @@ git commit -m "chore: 引入 agents-cooperation 协作流程"
 
 - 跑 `coop-lint.sh`（块格式有问题就不让提交）；
 - 检查有没有**删掉**块（纯数字编号和 `ren-1` 这种人类编号都覆盖）；
+- 跑 `coop-docs-check.sh`（脚本 `bash -n` / Markdown 围栏与反引号 / 表格列数 / 断链 / frontmatter，
+  有问题就不让提交。**默认只查"我们自己的"文件**，别的 skill 的文档不查——免得误伤）；
 - 检查提交消息里**要么有 `Coop-Block`、要么有 `Coop-Skip`**。
 
 合并 / revert 提交钩子本来就放行。只有"初始化仓库、还没有协作目录"这种提交才需要 `git commit --no-verify`。
@@ -99,6 +101,7 @@ git commit -m "chore: 引入 agents-cooperation 协作流程"
 ```bash
 .cursor/skills/agents-cooperation/assets/selftest.sh     # 全套回归，最后一行「失败 0」才算装好
 ./agents-cooperation/get-index.sh                       # 应该输出"下一个可用编号: 1"
+./agents-cooperation/coop-docs-check.sh                 # 文件语法体检，应该输出"体检通过"
 ```
 
 ### 9. 填一下"怎么构建"

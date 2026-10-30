@@ -5,7 +5,7 @@
 # 好处是：检查逻辑本身跟着仓库走，改了这里所有克隆都生效。
 # 也可以手工跑：
 #
-#   ./coop-hook.sh pre-commit          # 跑 coop-lint + 检查有没有把块删掉
+#   ./coop-hook.sh pre-commit          # 跑 coop-lint + 防删块 + coop-docs-check（脚本/Markdown 语法体检）
 #   ./coop-hook.sh commit-msg <文件>    # 检查提交消息带没带 Coop-Block（或 Coop-Skip）
 #
 # 确实无关的提交（初始化仓库等）可以用 `git commit --no-verify` 跳过；
@@ -82,13 +82,18 @@ case "$stage" in
       fi
     fi
 
+    # 3) 文件语法体检：脚本 bash -n + Markdown 结构 / frontmatter / 内部链接
+    #    这里**不** gate 在上一步的 rc 上：两类问题互相独立，一次把话说完，省得来回改两轮。
+    if [[ -f "$coop/coop-docs-check.sh" ]]; then
+      bash "$coop/coop-docs-check.sh" -q || rc=1
+    fi
+
     if (( rc != 0 )); then
       echo "（协作检查没过。先把上面报的改掉——尤其格式问题通常就是一行的事。）" >&2
       echo "（真跑不动、必须强推时，才用 git commit --no-verify。）" >&2
     fi
     exit "$rc"
     ;;
-
   commit-msg)
     msgfile="${2:-}"
     [[ -n "$msgfile" && -f "$msgfile" ]] || exit 0

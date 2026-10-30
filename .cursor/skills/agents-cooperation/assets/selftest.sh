@@ -343,7 +343,9 @@ expect_has "报告了'新建'" "新建"
 # 再跑一次应该"未变"，不该重复报新建
 run "$T/scripts/coop-init.sh"
 expect_rc "再跑一次 coop-init" 0
-expect_has "第二次全是'未变'" "未变 10 个"
+# 脚本数从源头算，别硬编码（以前写死 10，加了一个脚本就误报）
+n_scripts=$(( $(ls "$T/scripts"/*.sh | wc -l) ))
+expect_has "第二次全是'未变'（$n_scripts 个）" "未变 $n_scripts 个"
 expect_no "第二次不再报'新建'" "新建"
 
 # 手改仓库副本 → --check-sync 必须抓到漂移
@@ -392,6 +394,60 @@ rm -rf "$T/agents-cooperation"
 run "$T/scripts/coop-init.sh" --hooks
 expect_rc "没铺目录就跑 --hooks → 拒绝" 1
 expect_has "告诉先跑无参数版本" "先跑一次不带参数的 coop-init.sh"
+
+# ---------------------------------------------------------------- 语法体检（六类错都要抓到）
+section "coop-docs-check：脚本/Markdown 语法错要能定位、不静默、也不误伤"
+probe="$T/probe"; rm -rf "$probe"; mkdir -p "$probe/sk"
+printf '#!/bin/bash\nif [ 1 ; then\necho x\n'                         > "$probe/bad.sh"
+printf '# t\n\n```bash\necho hi\n'                                    > "$probe/fence.md"
+printf '# t\n\n放围栏里（``` 或 ~~~）。\n'                            > "$probe/backtick.md"
+printf '# t\n\n| a | b |\n| --- | --- |\n| 1 | 2 | 3 |\n'             > "$probe/table.md"
+printf '# t\n\n见 [x](nope.md)。\n'                                   > "$probe/link.md"
+printf -- '---\nname: d\ndescription: 说明: 半角冒号\n---\n\n# d\n'   > "$probe/sk/SKILL.md"
+printf -- '---\ntitle: 缺 description\n---\n\n# d\n'                  > "$probe/sk/rule.mdc"
+
+run "$T/scripts/coop-docs-check.sh" "$probe"
+expect_rc "六类错齐活 → 退 1" 1
+expect_has "1 脚本语法错报出行号" "bad.sh:4"
+expect_has "2 围栏不闭合" "代码围栏没闭合"
+expect_has "3 行内反引号没配对" "行内反引号没配对"
+expect_has "4 表格列数不一致" "表格这行 3 列"
+expect_has "5 内部链接断链" "内部链接指向不存在的文件"
+expect_has "6a SKILL.md 明文值里有 ': '" "明文值里有 ': '"
+expect_has "6b .mdc 缺 description" "缺 description"
+
+# 干净的样子 → 退 0（`x`、三连包三连、跨行 code span 都合法）
+clean="$T/probe-clean"; rm -rf "$clean"; mkdir -p "$clean"
+printf '# t\n\n行内用 `x`、```代码``` 都合法。\n\n`a\nb` 收尾。\n' > "$clean/ok.md"
+printf '第一行 `agent exec --message-file\n第二行 --json` 收尾。\n'  > "$clean/crossline.md"
+run "$T/scripts/coop-docs-check.sh" "$clean"
+expect_rc "干净 → 退 0" 0
+expect_no "不冤枉跨行 code span" "行内反引号没配对"
+
+# 显式给的路径不存在 → 别静默通过
+run "$T/scripts/coop-docs-check.sh" "$clean/不存在.md"
+expect_rc "显式路径不存在 → 退 1" 1
+expect_has "说清路径不存在" "路径不存在"
+
+# 默认范围只查"我们的"：别的 skill 的坏文档不该挡住本仓库（这是刻意的设计）
+other="$T/.cursor/skills/other-skill"; mkdir -p "$other"
+printf '# t\n\n```\n没闭合\n' > "$other/bad.md"
+run "$T/scripts/coop-docs-check.sh"
+expect_rc "默认范围忽略别的 skill → 退 0" 0
+run "$T/scripts/coop-docs-check.sh" --all
+expect_rc "--all 才连别的 skill 一起查 → 退 1" 1
+expect_has "--all 报出别的 skill 的问题" "other-skill/bad.md"
+rm -rf "$other"
+
+# 钩子把体检接进去了：语法错时 pre-commit 必须拦住
+mkdir -p "$T/agents-cooperation"
+printf '# t\n\n```bash\nx\n' > "$T/agents-cooperation/bad-doc.md"
+run "$T/scripts/coop-hook.sh" pre-commit
+expect_rc "pre-commit 拦住语法错的文档" 1
+expect_has "拦截信息里点出来" "代码围栏没闭合"
+rm -f "$T/agents-cooperation/bad-doc.md"
+run "$T/scripts/coop-hook.sh" pre-commit
+expect_rc "删掉坏文档后 pre-commit 放行" 0
 
 # ---------------------------------------------------------------- 字段读写（曾经的静默失败）
 section "字段读写：coop-record 不能再'报成功却没写'"
