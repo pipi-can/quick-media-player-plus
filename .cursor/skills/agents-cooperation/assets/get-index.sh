@@ -2,10 +2,10 @@
 # get-index.sh —— 只读。算出下一个协作块编号，并把现有协作块列出来。
 #
 # 用法：
-#   ./get-index.sh                     # 完整报告
-#   ./get-index.sh --next              # 只打印下一个可用编号
-#   ./get-index.sh --valid             # 只列 Valid=true 的块
-#   ./get-index.sh --folder <功能名>   # 只列某个功能文件夹里的块
+#   ./_tools/get-index.sh                     # 完整报告
+#   ./_tools/get-index.sh --next              # 只打印下一个可用编号
+#   ./_tools/get-index.sh --valid             # 只列 Valid=true 的块
+#   ./_tools/get-index.sh --folder <功能名>   # 只列某个功能文件夹里的块
 #   （--valid 和 --folder 可以一起用，方便只扫相关的那几块）
 #
 # 不修改任何文件。

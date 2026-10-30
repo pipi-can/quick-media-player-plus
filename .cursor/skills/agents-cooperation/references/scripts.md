@@ -2,10 +2,10 @@
 
 流程里凡是**机器能可靠判断**的步骤，都做成了脚本；剩下的是**必须人 / agent 判断**的，脚本不碰。
 
-脚本都在 `agents-cooperation/` 下（首次用 `coop-init.sh` 铺好）。
+脚本都在 `agents-cooperation/_tools/` 下（首次用 `coop-init.sh` 铺好）。
 
 > ⚠️ 这些是**副本**：正本在 skill 的 `assets/` 里。改脚本请改正本，再用 `coop-init.sh` 同步；
-> `./agents-cooperation/coop-init.sh --check-sync` 可以随时对账。
+> `./agents-cooperation/_tools/coop-init.sh --check-sync` 可以随时对账。
 
 ## 总览
 
@@ -59,46 +59,46 @@
 ## 命令速查
 
 ```bash
-# 一次性铺好协作目录，并把脚本同步进去（--hooks 只装 git 钩子，不碰脚本）
+# 一次性铺好协作目录，并把脚本同步进 _tools/（--hooks 只装 git 钩子，不碰脚本）
 .cursor/skills/agents-cooperation/assets/coop-init.sh
 .cursor/skills/agents-cooperation/assets/coop-init.sh --hooks
 
 # 对账：仓库里的脚本副本跟模板是否一致（改过脚本之后跑）
-./agents-cooperation/coop-init.sh --check-sync
+./agents-cooperation/_tools/coop-init.sh --check-sync
 
 # 脚本自己的回归测试（改完脚本先跑）
 .cursor/skills/agents-cooperation/assets/selftest.sh
 
 cd agents-cooperation
 
-./get-index.sh                     # 完整报告
-./get-index.sh --next              # 只要下一个编号（提示用）
-./get-index.sh --valid             # 只列还有效的块
-./get-index.sh --folder playback   # 只看某个功能
+./_tools/get-index.sh                     # 完整报告
+./_tools/get-index.sh --next              # 只要下一个编号（提示用）
+./_tools/get-index.sh --valid             # 只列还有效的块
+./_tools/get-index.sh --folder playback   # 只看某个功能
 
-./coop-history.sh 3                # 看某个块的来龙去脉
+./_tools/coop-history.sh 3                # 看某个块的来龙去脉
 
-./coop-find.sh Player              # 按关键词找块（删模块前必用）
-./coop-find.sh --id 3              # 打印块原文（方便贴给用户看）
-./coop-find.sh --list              # 列出所有块
+./_tools/coop-find.sh Player              # 按关键词找块（删模块前必用）
+./_tools/coop-find.sh --id 3              # 打印块原文（方便贴给用户看）
+./_tools/coop-find.sh --list              # 列出所有块
 
-./coop-review.sh                   # 摆出自评材料：当前未提交的改动
-./coop-review.sh 3                 # 摆出块 #3 已记录的提交
-./coop-review.sh --diff            # 连完整 diff 一起打印
+./_tools/coop-review.sh                   # 摆出自评材料：当前未提交的改动
+./_tools/coop-review.sh 3                 # 摆出块 #3 已记录的提交
+./_tools/coop-review.sh --diff            # 连完整 diff 一起打印
 
-./coop-new-block.sh -f playback -t "音量弹窗实现思路" -a opencode-agent
+./_tools/coop-new-block.sh -f playback -t "音量弹窗实现思路" -a opencode-agent
 
-./coop-record.sh 3                 # 回写提交（sha 默认取 HEAD）
-./coop-record.sh 3 d9fe736
+./_tools/coop-record.sh 3                 # 回写提交（sha 默认取 HEAD）
+./_tools/coop-record.sh 3 d9fe736
 
-./coop-lint.sh                    # 校验块格式
-./coop-lint.sh -q                 # 只说问题
+./_tools/coop-lint.sh                    # 校验块格式
+./_tools/coop-lint.sh -q                 # 只说问题
 
-./coop-docs-check.sh              # 体检文件语法（脚本 + Markdown + frontmatter + 链接）
-./coop-docs-check.sh --all        # 连别的 skill 一起查
-./coop-docs-check.sh <路径>…      # 只查指定文件 / 目录
+./_tools/coop-docs-check.sh              # 体检文件语法（脚本 + Markdown + frontmatter + 链接）
+./_tools/coop-docs-check.sh --all        # 连别的 skill 一起查
+./_tools/coop-docs-check.sh <路径>…      # 只查指定文件 / 目录
 
-./coop-hook.sh pre-commit         # 钩子实际跑的东西（一般不用手调）
+./_tools/coop-hook.sh pre-commit         # 钩子实际跑的东西（一般不用手调）
 ```
 
 ## 各脚本行为
@@ -135,7 +135,7 @@ cd agents-cooperation
 ### `coop-new-block.sh`（写）
 
 ```
-./coop-new-block.sh -f <功能> -t <标题> [-d <文档名>] [-a <作者>]
+./_tools/coop-new-block.sh -f <功能> -t <标题> [-d <文档名>] [-a <作者>]
 ```
 
 - 功能文件夹、文档不存在就创建（新文档带一级标题）；
@@ -190,7 +190,7 @@ cd agents-cooperation
 - `--hooks`：**只**装 `pre-commit` / `commit-msg`（要求数据目录已经铺好）；已有别的同名钩子会跳过，`--force-hooks` 覆盖并备份；
 - `--check-sync`：**只对账不改文件**，比较仓库里的脚本副本和模板是否一致，有漂移退 1。
 
-> **模板 vs 副本**：模板是 `.cursor/skills/agents-cooperation/assets/`（正本），仓库里的 `agents-cooperation/*.sh` 是副本。
+> **模板 vs 副本**：模板是 `.cursor/skills/agents-cooperation/assets/`（正本），仓库里的 `agents-cooperation/_tools/*.sh` 是副本。
 > 改脚本只改模板，然后跑一次 `coop-init.sh` 同步——别直接改副本，下次同步会被覆盖。
 > 同步覆盖前会先看：副本有**未提交**的改动就跳过不覆盖（退 1），已提交的才允许换掉。
 

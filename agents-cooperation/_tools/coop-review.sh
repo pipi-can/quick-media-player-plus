@@ -5,9 +5,9 @@
 #   可读性 / 最小实现与合理性 / 协作风格一致性 / 安全性  各 10 分，总分 40。
 #
 # 用法：
-#   ./coop-review.sh               # 审**当前未提交的改动**（提交前自评用，最常用）
-#   ./coop-review.sh <编号>         # 审某个块已记录的提交（[GitCommitIds] 里那些）
-#   ./coop-review.sh --diff [...]   # 连完整 diff 一起打印（默认只给统计，省 context）
+#   ./_tools/coop-review.sh               # 审**当前未提交的改动**（提交前自评用，最常用）
+#   ./_tools/coop-review.sh <编号>         # 审某个块已记录的提交（[GitCommitIds] 里那些）
+#   ./_tools/coop-review.sh --diff [...]   # 连完整 diff 一起打印（默认只给统计，省 context）
 #
 # 输出：改动文件与行数统计（+ 可选 diff）、评分表骨架、等级与处置。
 

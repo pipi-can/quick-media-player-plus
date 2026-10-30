@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | **规则**（rule） | 短，常驻：动工作区文件前先用"三问"判断要不要登记 | `.cursor/rules/agents-cooperation.mdc` |
 | **技能**（skill） | 长，详细步骤 + 参考文档 + 脚本（**涉及功能 / 接口 / 取舍**时用） | `.cursor/skills/agents-cooperation/`（含 `SKILL.md` / `assets/` / `references/`） |
-| **数据目录** | 协作块本身 + 脚本 + 构建说明 | `agents-cooperation/`（仓库根目录，随仓库提交） |
+| **数据目录** | 协作块本身 + 工具脚本 + 构建说明 | `agents-cooperation/`（仓库根目录，随仓库提交；工具在它下面的 `_tools/`） |
 
 前两样是"安装件"，复制一次；第三样由 `coop-init.sh` 在目标仓库里生成。
 
@@ -59,12 +59,17 @@ Cursor 直接读 `.cursor/rules/*.mdc` 和 `.cursor/skills/<名字>/SKILL.md`，
 .cursor/skills/agents-cooperation/assets/coop-init.sh
 ```
 
-它会在仓库根目录建 `agents-cooperation/`，把脚本同步进去（逐个报告 **新建 / 更新 / 未变**），并写一个 `.gitignore`（忽略编号锁文件）。
+它会在仓库根目录建 `agents-cooperation/`，把脚本同步进 `agents-cooperation/_tools/`（逐个报告 **新建 / 更新 / 未变**），并写一个 `.gitignore`（忽略编号锁文件）。
+根目录只留记录（块文档 + `index-reserved.txt`），工具集中在 `_tools/` 下面。
 
 > **模板 vs 副本**：`.cursor/skills/agents-cooperation/assets/` 里的脚本是**正本（模板）**，
-> `agents-cooperation/` 里那份是**副本**。要改脚本改模板，然后重跑一次 `coop-init.sh` 同步过去——
-> **别直接改副本**，下次同步就会被覆盖（副本有未提交的手改时，同步会跳过它并退 1，不会闷声冲掉）。
-> 想确认两边一致：`./agents-cooperation/coop-init.sh --check-sync`。
+> `agents-cooperation/_tools/` 里那份是**副本**。要改脚本改模板，然后重跑一次 `coop-init.sh` 同步过去——
+> **别直接改副本**，下次同步就会被覆盖（覆盖前会先确认副本内容 git 里有备份：
+> 没备份的手改会跳过并退 1，不会闷声冲掉）。
+> 想确认两边一致：`./agents-cooperation/_tools/coop-init.sh --check-sync`。
+>
+> 早先用旧布局（脚本直接摊在 `agents-cooperation/` 根下）的仓库，`coop-init.sh` 会自动把它们搬进 `_tools/`，
+> 并把还指着旧路径的钩子壳子改写过来——不然钩子找不到脚本会**静默放行**。
 
 **先别急着装钩子**——第一次提交（把 rule / skill / 数据目录加进来）还没有 `Coop-Block` trailer，会被钩子拦。所以顺序是：
 
@@ -100,14 +105,14 @@ git commit -m "chore: 引入 agents-cooperation 协作流程"
 
 ```bash
 .cursor/skills/agents-cooperation/assets/selftest.sh     # 全套回归，最后一行「失败 0」才算装好
-./agents-cooperation/get-index.sh                       # 应该输出"下一个可用编号: 1"
-./agents-cooperation/coop-docs-check.sh                 # 文件语法体检，应该输出"体检通过"
+./agents-cooperation/_tools/get-index.sh                       # 应该输出"下一个可用编号: 1"
+./agents-cooperation/_tools/coop-docs-check.sh                 # 文件语法体检，应该输出"体检通过"
 ```
 
 ### 9. 填一下"怎么构建"
 
 ```bash
-./agents-cooperation/coop-init.sh   # 会生成 agents-cooperation/_repo/build.md
+./agents-cooperation/_tools/coop-init.sh   # 会生成 agents-cooperation/_repo/build.md
 $EDITOR agents-cooperation/_repo/build.md    # 把构建 / 测试命令填上，提交
 ```
 
@@ -120,14 +125,14 @@ $EDITOR agents-cooperation/_repo/build.md    # 把构建 / 测试命令填上，
 装完先**真的走一次流程**，比读十遍文档管用。最简单的第一件事：**把"搭这套协作流程"本身登记成块 1**。
 
 ```bash
-./agents-cooperation/coop-new-block.sh -f infra -t "引入 agents-cooperation 协作流程"
+./agents-cooperation/_tools/coop-new-block.sh -f infra -t "引入 agents-cooperation 协作流程"
 $EDITOR agents-cooperation/infra/*.md          # 写上目标 / 落点 / 约定 / 验收
 git add -A && git commit -m "chore(infra): 引入协作流程
 
 Coop-Block: 1
 Coop-Folder: infra
 Coop-Author: <你的名字>"
-./agents-cooperation/coop-record.sh 1
+./agents-cooperation/_tools/coop-record.sh 1
 git add -A && git commit -m "docs(agents-cooperation): 回写块 1 的提交记录
 
 Coop-Skip: 纯登记操作"
@@ -140,7 +145,7 @@ Coop-Skip: 纯登记操作"
 - **功能文件夹名按新仓库自己的习惯来**，别照抄 `playback` / `theme`。第一次建块用：
 
   ```bash
-  ./agents-cooperation/coop-new-block.sh -f <功能> -t "<标题>"
+  ./agents-cooperation/_tools/coop-new-block.sh -f <功能> -t "<标题>"
   ```
 
 - `SKILL.md` 和 `references/` 里的举例还是原来那个 Qt 工程的，**不影响使用**（都标了"只是举例"）。想改成本仓库的例子更好。
@@ -155,6 +160,6 @@ Coop-Skip: 纯登记操作"
 1. 只改**模板** `.cursor/skills/agents-cooperation/assets/` 下的脚本；
 2. 跑 `selftest.sh`（最后一行必须「失败 0」）；
 3. 重跑一次 `coop-init.sh`（无参数）把副本同步过去——它会报告 **新建 / 更新 / 未变**，并提醒你看 `git diff`；
-4. 提交前对账：`./agents-cooperation/coop-init.sh --check-sync`（有漂移就退 1）。
+4. 提交前对账：`./agents-cooperation/_tools/coop-init.sh --check-sync`（有漂移就退 1）。
 
 > 块、`index-reserved.txt`、`_repo/` 都不会被同步碰到——同步只动脚本文件。

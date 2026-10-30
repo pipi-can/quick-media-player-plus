@@ -2,9 +2,9 @@
 # coop-new-block.sh —— 新建一个协作块，编号自动取（不用手算、不会撞号）。
 #
 # 用法：
-#   ./coop-new-block.sh -f <功能文件夹> -t <标题> [-d <文档名>] [-a <作者>]
-#   例：./coop-new-block.sh -f playback -t "音量弹窗实现思路" -a opencode-agent
-#       ./coop-new-block.sh -f playback -t "音量弹窗实现思路" -d 音量控制实现思路.md
+#   ./_tools/coop-new-block.sh -f <功能文件夹> -t <标题> [-d <文档名>] [-a <作者>]
+#   例：./_tools/coop-new-block.sh -f playback -t "音量弹窗实现思路" -a opencode-agent
+#       ./_tools/coop-new-block.sh -f playback -t "音量弹窗实现思路" -d 音量控制实现思路.md
 #
 # 行为：
 #   - 功能文件夹不存在就创建；
@@ -83,4 +83,4 @@ printf '\n下一步：\n'
 printf '  1. 编辑 %s，把 [Comments] 的 TODO 换成真正的思路\n' "$file"
 printf '  2. 写代码\n'
 printf '  3. git add && git commit（正文写思路，尾部带 Coop-Block: %s / Coop-Folder: %s / Coop-Author: %s）\n' "$idx" "$folder" "$author"
-printf '  4. ./coop-record.sh %s    # 把这次提交回写进块\n' "$idx"
+printf '  4. ./_tools/coop-record.sh %s    # 把这次提交回写进块\n' "$idx"

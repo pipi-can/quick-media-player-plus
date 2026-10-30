@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # coop-history.sh —— 只读。给一个协作块编号，把这条思路的来龙去脉拉出来。
 #
-# 用法：./coop-history.sh <块编号>   （如 ./coop-history.sh 3）
+# 用法：./_tools/coop-history.sh <块编号>   （如 ./_tools/coop-history.sh 3）
 #
 # 输出：块的 Title / Author / GitBranch，然后按 [GitCommitIds]（最新在最前）
 #       逐个打印提交的标题、正文和改动文件；数组是空的就退回按 Coop-Block 反查。
@@ -25,7 +25,7 @@ while IFS= read -r r; do
 done < <(coop_scan_rows)
 
 if [[ -z "$row" ]]; then
-  echo "没找到编号为 '$id' 的协作块。用 ./get-index.sh 看现有块。" >&2
+  echo "没找到编号为 '$id' 的协作块。用 ./_tools/get-index.sh 看现有块。" >&2
   exit 1
 fi
 

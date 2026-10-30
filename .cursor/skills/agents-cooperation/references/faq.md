@@ -162,7 +162,7 @@ Coop-Author: opencode-agent
 不行。先搜出"思路依赖它"的块，再问用户：
 
 ```bash
-./agents-cooperation/coop-find.sh <模块名或类名>
+./agents-cooperation/_tools/coop-find.sh <模块名或类名>
 ```
 
 把清单摆给用户（哪几个块、为什么、将被置 `[Valid]: false`、**不会删除块**），**等用户明确同意**再改 `[Valid]`。
@@ -242,14 +242,14 @@ D 档（<24）就**先改再提交**，不用问。
 .cursor/skills/agents-cooperation/assets/coop-init.sh
 ```
 
-它会在仓库根目录建 `agents-cooperation/`，把脚本同步进去。然后再 `coop-new-block.sh` 建第一个块。别自己另写一份脚本。
+它会在仓库根目录建 `agents-cooperation/`，把脚本同步进 `agents-cooperation/_tools/`。然后再 `coop-new-block.sh` 建第一个块。别自己另写一份脚本。
 
 > 里面的脚本是**副本**——正本是 skill 的 `assets/`。要改脚本就改正本，然后重跑 `coop-init.sh` 同步过去
 > （它会报告改了哪几个），再用 `--check-sync` 对账。直接改副本的话，下次同步会被覆盖。
 
 ### Q：目录结构是死的吗？功能文件夹必须叫 `playback` 这种？
 
-**结构是固定的，名字不是。** 固定的只有：目录叫 `agents-cooperation/`、一功能一文件夹、块的字段格式、脚本平铺在里面。
+**结构是固定的，名字不是。** 固定的只有：目录叫 `agents-cooperation/`、一功能一文件夹、块的字段格式、工具脚本平铺在 `_tools/` 里面。
 
 功能文件夹叫什么、文档叫什么，**按本仓库自己的习惯来**——`playback` / `theme` 只是示例，换一个工程就换成那个工程的功能划分（电商后台可能是 `orders` / `refund`）。关键是**别为同一个功能生造第二个名字**，否则后来者找不到。
 
@@ -258,7 +258,7 @@ D 档（<24）就**先改再提交**，不用问。
 先按功能文件夹缩范围，再只看有效的：
 
 ```bash
-./agents-cooperation/get-index.sh --valid --folder <功能>
+./agents-cooperation/_tools/get-index.sh --valid --folder <功能>
 ```
 
 `--folder` 只列该功能下的块，`--valid` 只列 `[Valid]: true` 的。这样一次要看的通常就一两个。

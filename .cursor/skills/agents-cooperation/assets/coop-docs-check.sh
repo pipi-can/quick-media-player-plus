@@ -2,9 +2,9 @@
 # coop-docs-check.sh —— 只读。体检：脚本语法 + Markdown 结构 + frontmatter + 内部链接。
 #
 # 用法：
-#   ./coop-docs-check.sh [-q]               # 默认范围（保守，pre-commit 钩子用这个）
-#   ./coop-docs-check.sh --all              # 连 .cursor/skills 下所有 skill、.cursor/rules 全查
-#   ./coop-docs-check.sh <路径>…            # 只查指定文件 / 目录
+#   ./_tools/coop-docs-check.sh [-q]               # 默认范围（保守，pre-commit 钩子用这个）
+#   ./_tools/coop-docs-check.sh --all              # 连 .cursor/skills 下所有 skill、.cursor/rules 全查
+#   ./_tools/coop-docs-check.sh <路径>…            # 只查指定文件 / 目录
 #
 # 默认范围只用"我们自己的"文件，**故意不碰别的 skill**：
 #   agents-cooperation/、.cursor/rules/agents-cooperation.mdc、.cursor/skills/agents-cooperation/

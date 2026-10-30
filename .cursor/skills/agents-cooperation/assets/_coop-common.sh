@@ -4,7 +4,7 @@
 #
 # 提供：
 #   $COOP_SEP        内部字段分隔符（ASCII 31；不能用 TAB，bash 会把空字段吃掉）
-#   $COOP_ROOT       协作目录（= 本文件所在目录），所有脚本都以此为根
+#   $COOP_ROOT       协作目录根（脚本在 _tools/ 下时 = 它的上一层），所有脚本都以此为根
 #   coop_scan_rows   输出所有协作块，一行一个，字段用 $COOP_SEP 分隔：
 #                      文件 <SEP> Index <SEP> Valid <SEP> Author <SEP> Title
 #                           <SEP> GitBranch <SEP> GitCommitIds
@@ -39,7 +39,17 @@
 #     coop-lint.sh 会用"看起来像字段但没被解析"的检查兜住常见的写法问题。
 
 COOP_SEP=$'\x1f'
-COOP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# COOP_ROOT = 协作目录根（块文档、index-reserved.txt、编号锁都在这儿）。
+# 脚本自己可能住在两个地方：skill 的 assets/（模板），或仓库里的 _tools/（副本）。
+# 副本在 `_tools/` 下时，根是它的**上一层**；别的地方（assets/、回归测试的临时目录）
+# 就当脚本所在目录就是根。
+_coop_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ "$(basename "$_coop_dir")" == "_tools" ]]; then
+  COOP_ROOT="$(dirname "$_coop_dir")"
+else
+  COOP_ROOT="$_coop_dir"
+fi
+unset _coop_dir
 # 编号锁（临时文件，可 gitignore）与编号预留表（要提交，别人 pull 才看得到）
 COOP_LOCK_FILE="${COOP_LOCK_FILE:-$COOP_ROOT/.index.lock}"
 COOP_RESERVE_FILE="${COOP_RESERVE_FILE:-$COOP_ROOT/index-reserved.txt}"
@@ -238,7 +248,7 @@ coop_find_block_file() {
   if (( ${#hits[@]} > 1 )); then
     printf '编号 %s 在多个文件里出现，不猜是哪个：\n' "$id" >&2
     printf '  %s\n' "${hits[@]#"$COOP_ROOT"/}" >&2
-    printf '先跑 ./coop-lint.sh 修掉撞号，再继续。\n' >&2
+    printf '先跑 ./_tools/coop-lint.sh 修掉撞号，再继续。\n' >&2
     return 1
   fi
   printf '%s\n' "${hits[0]}"

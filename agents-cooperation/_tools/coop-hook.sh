@@ -5,8 +5,8 @@
 # 好处是：检查逻辑本身跟着仓库走，改了这里所有克隆都生效。
 # 也可以手工跑：
 #
-#   ./coop-hook.sh pre-commit          # 跑 coop-lint + 防删块 + coop-docs-check（脚本/Markdown 语法体检）
-#   ./coop-hook.sh commit-msg <文件>    # 检查提交消息带没带 Coop-Block（或 Coop-Skip）
+#   ./_tools/coop-hook.sh pre-commit          # 跑 coop-lint + 防删块 + coop-docs-check（脚本/Markdown 语法体检）
+#   ./_tools/coop-hook.sh commit-msg <文件>    # 检查提交消息带没带 Coop-Block（或 Coop-Skip）
 #
 # 确实无关的提交（初始化仓库等）可以用 `git commit --no-verify` 跳过；
 # 合并 / revert 提交本来就放行，不用绕。
@@ -15,8 +15,15 @@ set -uo pipefail
 
 root="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "不在 git 仓库里" >&2; exit 0; }
 cd "$root" || exit 0
-# 协作目录就是本脚本所在目录（不写死名字，也方便回归测试）
-coop="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 两个目录要分清：
+#   tools = 本脚本所在目录（仓库存放时是 agents-cooperation/_tools/，回归测试里是别的名字）
+#   coop  = 协作目录根（块文档、index-reserved.txt 在那儿）；tools 叫 _tools 时就是它的上一层
+tools="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ "$(basename "$tools")" == "_tools" ]]; then
+  coop="$(dirname "$tools")"
+else
+  coop="$tools"
+fi
 case "$coop" in
   "$root"/*) coop_rel="${coop#"$root"/}" ;;
   *)         coop="$root/agents-cooperation"; coop_rel="agents-cooperation" ;;
@@ -62,8 +69,8 @@ case "$stage" in
     rc=0
 
     # 1) 协作块格式
-    if [[ -f "$coop/coop-lint.sh" ]]; then
-      bash "$coop/coop-lint.sh" -q || rc=1
+    if [[ -f "$tools/coop-lint.sh" ]]; then
+      bash "$tools/coop-lint.sh" -q || rc=1
     fi
 
     # 2) 防删块：块只作废，不删除（删了编号会被回收，Coop-Block 反查就串台）
@@ -84,8 +91,8 @@ case "$stage" in
 
     # 3) 文件语法体检：脚本 bash -n + Markdown 结构 / frontmatter / 内部链接
     #    这里**不** gate 在上一步的 rc 上：两类问题互相独立，一次把话说完，省得来回改两轮。
-    if [[ -f "$coop/coop-docs-check.sh" ]]; then
-      bash "$coop/coop-docs-check.sh" -q || rc=1
+    if [[ -f "$tools/coop-docs-check.sh" ]]; then
+      bash "$tools/coop-docs-check.sh" -q || rc=1
     fi
 
     if (( rc != 0 )); then

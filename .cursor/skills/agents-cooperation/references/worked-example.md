@@ -21,7 +21,7 @@ ls agents-cooperation/
 ### 第 2 步：跑编号工具，拿块清单
 
 ```bash
-./agents-cooperation/get-index.sh
+./agents-cooperation/_tools/get-index.sh
 ```
 
 ```text
@@ -89,7 +89,7 @@ git show 38149f3 --stat
 编号别手算，用脚本建骨架：
 
 ```bash
-./agents-cooperation/coop-new-block.sh -f playback -t "音量弹窗实现思路" -a opencode-agent
+./agents-cooperation/_tools/coop-new-block.sh -f playback -t "音量弹窗实现思路" -a opencode-agent
 ```
 
 它自动取编号、建好字段、把 `[Comments]` 留成 TODO。你把 TODO 换成真正的思路：
@@ -117,7 +117,7 @@ git show 38149f3 --stat
 ### 第 8 步：校验 + 提交
 
 ```bash
-./agents-cooperation/coop-lint.sh          # 格式自检，有错先修
+./agents-cooperation/_tools/coop-lint.sh          # 格式自检，有错先修
 git add qml/layouts/VolumePopup.qml qml/pages/PlayerPage.qml \
         includes/player/player.h sources/player/player.cpp \
         agents-cooperation/playback/播放控制实现思路.md
@@ -140,7 +140,7 @@ Coop-Author: opencode-agent
 ### 第 9 步：回写
 
 ```bash
-./agents-cooperation/coop-record.sh 10
+./agents-cooperation/_tools/coop-record.sh 10
 ```
 
 它自动把刚提交的 sha 插到 `[GitCommitIds]` 最前面、把 `[GitBranch]` 填成当前分支：
@@ -179,7 +179,7 @@ Coop-Author: opencode-agent
 ### 第 1 步：跑工具，发现没有对应文件夹
 
 ```bash
-./agents-cooperation/get-index.sh
+./agents-cooperation/_tools/get-index.sh
 # 输出里没有任何 lyric / network 相关的块
 ls agents-cooperation/    # 没有 network/
 ```
@@ -196,7 +196,7 @@ ls agents-cooperation/    # 没有 network/
 ### 第 3 步：用户回答后，建目录 + 建块
 
 ```bash
-./agents-cooperation/coop-new-block.sh -f lyrics -t "在线歌词拉取与匹配" -a opencode-agent
+./agents-cooperation/_tools/coop-new-block.sh -f lyrics -t "在线歌词拉取与匹配" -a opencode-agent
 ```
 
 脚本会建好 `agents-cooperation/lyrics/实现思路.md` 和块骨架，把 `[Comments]` 的 TODO 换成真正的思路：

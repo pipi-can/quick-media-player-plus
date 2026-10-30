@@ -2,9 +2,9 @@
 # coop-record.sh —— 把一个提交回写进协作块（改块的 [GitBranch] 和 [GitCommitIds]）。
 #
 # 用法：
-#   ./coop-record.sh <块编号> [sha]
-#   例：./coop-record.sh 10            # sha 默认取当前 HEAD
-#       ./coop-record.sh 10 d9fe736
+#   ./_tools/coop-record.sh <块编号> [sha]
+#   例：./_tools/coop-record.sh 10            # sha 默认取当前 HEAD
+#       ./_tools/coop-record.sh 10 d9fe736
 #
 # 行为：
 #   - 找到 [Index] 等于 <块编号> 的那个块；
@@ -59,7 +59,7 @@ got_branch="$(coop_get_field "$target" "$id" GitBranch)"
 got_commits="$(coop_get_field "$target" "$id" GitCommitIds)"
 if [[ "$got_branch" != "$branch" || "$got_commits" != "$new_json" ]]; then
   echo "✗ 回写没有生效（写进去的是 GitBranch='$got_branch' GitCommitIds='$got_commits'）。" >&2
-  echo "  这通常是块里没有这两个字段、或字段写得不是顶格。请先跑 ./coop-lint.sh 看看。" >&2
+  echo "  这通常是块里没有这两个字段、或字段写得不是顶格。请先跑 ./_tools/coop-lint.sh 看看。" >&2
   exit 1
 fi
 

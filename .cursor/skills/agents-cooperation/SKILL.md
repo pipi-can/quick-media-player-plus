@@ -61,29 +61,29 @@ Coop-Skip: 只改了文档错别字，无行为变化
 
 ```
 - [ ] 1. 从用户提示词里抽出功能关键词，定位 agents-cooperation/<功能>/
-       （定位不准就先搜：./coop-find.sh <关键词>）
-- [ ] 2. ./get-index.sh --valid --folder <功能>     # 只列有效且相关的块
+       （定位不准就先搜：./_tools/coop-find.sh <关键词>）
+- [ ] 2. ./_tools/get-index.sh --valid --folder <功能>     # 只列有效且相关的块
 - [ ] 3. 无关的块连正文都别读；相关的读它的 [Comments]
-- [ ] 4. ./coop-history.sh <编号>                   # 拉出这条思路的提交演进
+- [ ] 4. ./_tools/coop-history.sh <编号>                   # 拉出这条思路的提交演进
 - [ ] 5. 判断这条思路是否可靠、是否和用户本次要求一致；不一致就停下来问用户
 - [ ] 6. 找不到相关块（= 新功能）→ **先问用户**：要不要建块？文件夹名 / 标题 / 目标 / 边界 /
        落点 / 约束 / 验收标准分别是什么（见 references/asking-users.md 的「新功能」一节）
 - [ ] 7. 用户确认后建块，并把第 6 步问到的信息写进 [Comments]：
-       ./coop-new-block.sh -f <功能> -t "<标题>"     # 续写已有块 → 跳过 6、7
+       ./_tools/coop-new-block.sh -f <功能> -t "<标题>"     # 续写已有块 → 跳过 6、7
 - [ ] 8. **本次会不会删掉某个模块 / 文件 / 类？** 会的话：
-       ./coop-find.sh <模块名>                      # 找出思路依赖它的块
+       ./_tools/coop-find.sh <模块名>                      # 找出思路依赖它的块
        → 把"这些块将被置 [Valid]: false"列给用户 → **等用户同意**
        → 同意后才置 false（**只作废、不删块**）
 - [ ] 9. 还有别的任何不明确的地方，继续问用户，别自己臆想
 - [ ] 10. 动手写代码（沿用第 4 步吃透的思路），注释按 references/code-comments.md 写
 - [ ] 11. **编译验证**：跑构建（命令见 agents-cooperation/_repo/build.md）；失败就把原因告诉用户，
         不要当成"做完了"（见 references/build-verify.md）
-- [ ] 12. **自评打分**：./coop-review.sh → 按 references/code-review.md 打四个维度，
+- [ ] 12. **自评打分**：./_tools/coop-review.sh → 按 references/code-review.md 打四个维度，
         把「验收对照 + 分数表 + 我最不放心的三点」发给用户；C 档先问、D 档先改（见 references/code-review.md 的等级处置）
-- [ ] 13. ./coop-lint.sh                            # 提交前校验块格式
-- [ ] 13b. ./coop-docs-check.sh                     # 提交前体检文件语法（钩子也会自动跑）
+- [ ] 13. ./_tools/coop-lint.sh                            # 提交前校验块格式
+- [ ] 13b. ./_tools/coop-docs-check.sh                     # 提交前体检文件语法（钩子也会自动跑）
 - [ ] 14. git 提交：标题=实现了什么，正文=实现思路，尾部带 Coop-* trailer（块和代码一起提交）
-- [ ] 15. ./coop-record.sh <编号>                   # 把这次提交回写进块
+- [ ] 15. ./_tools/coop-record.sh <编号>                   # 把这次提交回写进块
 - [ ] 16. 提交这次回写
 ```
 
@@ -98,17 +98,18 @@ Coop-Skip: 只改了文档错别字，无行为变化
 
 ```
 agents-cooperation/
-├── _coop-common.sh       # 各脚本共用的解析库（别单独跑）
-├── get-index.sh          # 编号 + 块清单（只读）
-├── coop-find.sh          # 按关键词 / 编号找块（只读）——删模块前必用
-├── coop-lint.sh          # 格式校验（只读）
-├── coop-docs-check.sh    # 文件语法体检：脚本 / Markdown / frontmatter / 链接（只读）
-├── coop-history.sh       # 拉某个块的提交历史（只读）
-├── coop-review.sh        # 摆出自评要用的材料（只读）
-├── coop-new-block.sh     # 建新块（取号加锁，防并发撞号）
-├── coop-record.sh        # 回写分支 / commit
-├── coop-hook.sh          # git 钩子实际跑的东西
-├── coop-init.sh          # 铺脚本 / 装钩子 / --check-sync 对账（副本，正本在 skill 的 assets/）
+├── _tools/               # ← 工具脚本（`_` 开头 = **不是协作块**）
+│   ├── _coop-common.sh     #   各脚本共用的解析库（别单独跑）
+│   ├── get-index.sh        #   编号 + 块清单（只读）
+│   ├── coop-find.sh        #   按关键词 / 编号找块（只读）——删模块前必用
+│   ├── coop-lint.sh        #   格式校验（只读）
+│   ├── coop-docs-check.sh  #   文件语法体检：脚本 / Markdown / frontmatter / 链接（只读）
+│   ├── coop-history.sh     #   拉某个块的提交历史（只读）
+│   ├── coop-review.sh      #   摆出自评要用的材料（只读）
+│   ├── coop-new-block.sh   #   建新块（取号加锁，防并发撞号）
+│   ├── coop-record.sh      #   回写分支 / commit
+│   ├── coop-hook.sh        #   git 钩子实际跑的东西
+│   └── coop-init.sh        #   铺脚本 / 装钩子 / --check-sync 对账（副本，正本在 skill 的 assets/）
 ├── index-reserved.txt    # 编号预留表（要提交，防跨工作区撞号）
 ├── .gitignore            # 忽略编号锁文件
 ├── _repo/                # ← `_` 开头 = **不是协作块**，放仓库级说明
@@ -121,11 +122,14 @@ agents-cooperation/
 ```
 
 > **`_` 开头的文件 / 目录不是协作块**（脚本不解析、`get-index.sh` 不统计、`coop-lint.sh` 不检查）。
-> 放"怎么构建""团队约定"这类仓库级说明。示例文档仍然**不要**放进协作目录，放 skill 的 `references/`。
+> 放"怎么构建""工具脚本"这类仓库级说明。示例文档仍然**不要**放进协作目录，放 skill 的 `references/`。
+>
+> 工具集中在 `_tools/` 下：根目录只留**记录**（块文档 + 预留表），一眼能看清"这个仓库的功能都在哪"。
+> 脚本会自己认出 `_tools/`，把上一层当协作目录根（编号锁、预留表、块文档都在根上）。
 
 **固定不变的部分**（脚本依赖，别改）：
 
-- 目录就叫 `agents-cooperation/`，在仓库根目录；脚本平铺在里面；
+- 目录就叫 `agents-cooperation/`，在仓库根目录；**工具脚本住在它下面的 `_tools/`**；
 - 一个功能一个文件夹；一个功能可以有多篇文档；一篇文档可以有多个块；
 - 块的字段格式（见下）。
 
@@ -166,7 +170,7 @@ agents-cooperation/
   （脚本对全角 `：` 和小写 `[index]` 是容忍的，但 `coop-lint.sh` 会报错要求改规范——免得别的工具看错。）
 - **要演示块格式，把示例放进围栏代码块**（```` ``` ```` 或 `~~~`）。脚本会整段跳过围栏内容，示例就不会变成"幽灵块"；反过来，围栏没闭合会让后面的块全被跳过，`coop-lint.sh` 会报这个错。
 - 不要在 `[Comments]` 正文里**顶格**写 `[字段]: …`——那会被当成新块的开始，把当前块从中间切开（缩进一级或放进围栏就没问题）。
-- 写完跑 `./coop-lint.sh` 自检。
+- 写完跑 `./_tools/coop-lint.sh` 自检。
 
 ## 字段说明
 
@@ -207,11 +211,11 @@ agents-cooperation/
 
 ## 写代码之前：怎么高效找思路
 
-1. `./get-index.sh --valid --folder <功能>` —— 只列还有效、且和本次相关的块；
-   （不确定归哪个功能文件夹就先跑 `./get-index.sh --valid` 看全量。）
+1. `./_tools/get-index.sh --valid --folder <功能>` —— 只列还有效、且和本次相关的块；
+   （不确定归哪个功能文件夹就先跑 `./_tools/get-index.sh --valid` 看全量。）
 2. **`:false` 的块一律跳过**，连正文都别看。
 3. `[Title]` 判断不相关的**别读正文**——既省 context，也免得被带偏。
-4. 对相关块：`./coop-history.sh <编号>`，一次把它按提交演进的来龙去脉拉出来
+4. 对相关块：`./_tools/coop-history.sh <编号>`，一次把它按提交演进的来龙去脉拉出来
    （它会读 `[GitCommitIds]` / `[GitBranch]` 去 `git show`；分支不在了也不影响，同一仓库里照样能看）。
 5. 吃透之后再动手，**不要**绕开它自己重新设计一套。
 
@@ -226,7 +230,7 @@ agents-cooperation/
 1. 抽出被删对象的名字（模块名 / 类名 / 文件名 / 功能名）。
 2. 搜一遍（多换几个关键词：类名、文件名、功能名）：
    ```bash
-   ./agents-cooperation/coop-find.sh <模块名>
+   ./agents-cooperation/_tools/coop-find.sh <模块名>
    ```
 3. **把清单摆给用户**，说清"要作废哪些块、不删块"：
 
@@ -264,8 +268,8 @@ agents-cooperation/
 跑一次，把材料摆齐（它不猜分数）：
 
 ```bash
-./agents-cooperation/coop-review.sh        # 审当前未提交的改动（最常用）
-./agents-cooperation/coop-review.sh 3      # 审块 #3 已记录的提交
+./agents-cooperation/_tools/coop-review.sh        # 审当前未提交的改动（最常用）
+./agents-cooperation/_tools/coop-review.sh 3      # 审块 #3 已记录的提交
 ```
 
 然后按 [references/code-review.md](references/code-review.md) 打分，**四个维度各 10 分、总分 40**：
@@ -334,7 +338,7 @@ Coop-Author: opencode-agent
 - trailer 用来反查：`git log --grep='^Coop-Block: 3$'`、`git log --grep='^Coop-Author: cursor-agent$'`。
   **注意锚定 `^…$`**：不锚定的话 `Coop-Block: 3` 会把 `Coop-Block: 30` 也捞进来。
 - 提交到本地当前分支；用户没要求就别 push、别乱开分支。用户要求开功能分支时，`git checkout -b <feature>` 并把分支名记进 `[GitBranch]`。
-- 提交前跑一次 `./coop-lint.sh`。
+- 提交前跑一次 `./_tools/coop-lint.sh`。
 - **提交前必须已经做完"编译验证 + 自评打分"**（流程第 11、12 步）。正文里带上结论一行，方便 review 的人：
   `编译：✅ cmake --build build -j8 ｜ 自评：34/40（B，遗留见块 #3）`
 - 如果这次还**作废**了别的块，正文里写明"作废块 #3 #7"（trailer 只能带一个 `Coop-Block`）。
@@ -349,7 +353,7 @@ Coop-Author: opencode-agent
 commit 的 sha 只有提交之后才知道，所以默认两步：
 
 1. 把代码 + 协作块一起 `git add`、提交；
-2. 跑 `./coop-record.sh <编号>` —— 它自动把当前 `HEAD` 的短 sha 插到 `[GitCommitIds]` 最前面、把 `[GitBranch]` 填成当前分支，然后再提交一次。这次是登记用的，标题可以写 `docs(agents-cooperation): 回写协作块 <编号> 的提交记录`。
+2. 跑 `./_tools/coop-record.sh <编号>` —— 它自动把当前 `HEAD` 的短 sha 插到 `[GitCommitIds]` 最前面、把 `[GitBranch]` 填成当前分支，然后再提交一次。这次是登记用的，标题可以写 `docs(agents-cooperation): 回写协作块 <编号> 的提交记录`。
 
 续写已有块时，`coop-record.sh` 会把新 sha 插到数组最前、保留老的——后来者会从头到尾看整条演进。
 
@@ -373,7 +377,7 @@ commit 的 sha 只有提交之后才知道，所以默认两步：
 **② 用户确认后建块，并把问到的信息写进 `[Comments]`：**
 
 ```bash
-./agents-cooperation/coop-new-block.sh -f <功能> -t "<标题>"
+./agents-cooperation/_tools/coop-new-block.sh -f <功能> -t "<标题>"
 ```
 
 它会建目录、建文档、追加一个排好编号的块骨架（`[Valid]: true`、`[GitBranch]` / `[GitCommitIds]` 先 `null`、`[Comments]` 留 TODO）。**只追加，不动已有内容。**
@@ -407,20 +411,20 @@ commit 的 sha 只有提交之后才知道，所以默认两步：
 ```
 
 > `agents-cooperation/` 里的脚本是**副本**，正本是 skill 的 `assets/`。改了脚本要重跑 `coop-init.sh` 同步，
-> 再用 `./agents-cooperation/coop-init.sh --check-sync` 对账；别直接改副本。
+> 再用 `./agents-cooperation/_tools/coop-init.sh --check-sync` 对账；别直接改副本。
 
 之后常用：
 
 ```bash
-./agents-cooperation/get-index.sh [--next] [--valid] [--folder <功能>]   # 只读：编号 + 块清单
-./agents-cooperation/coop-find.sh <关键词>                                # 只读：按关键词找块（删模块前必用）
-./agents-cooperation/coop-find.sh --id <编号>                             # 只读：打印块原文（方便贴给用户）
-./agents-cooperation/coop-history.sh <编号>                              # 只读：某块的提交演进
-./agents-cooperation/coop-review.sh [<编号>] [--diff]                    # 只读：摆出自评材料
-./agents-cooperation/coop-lint.sh [-q]                                   # 只读：块格式校验
-./agents-cooperation/coop-docs-check.sh [--all] [<路径>…]                # 只读：文件语法体检
-./agents-cooperation/coop-new-block.sh -f <功能> -t "<标题>" [-d <文档>] [-a <作者>]
-./agents-cooperation/coop-record.sh <编号> [sha]                         # 回写分支 / commit
+./agents-cooperation/_tools/get-index.sh [--next] [--valid] [--folder <功能>]   # 只读：编号 + 块清单
+./agents-cooperation/_tools/coop-find.sh <关键词>                                # 只读：按关键词找块（删模块前必用）
+./agents-cooperation/_tools/coop-find.sh --id <编号>                             # 只读：打印块原文（方便贴给用户）
+./agents-cooperation/_tools/coop-history.sh <编号>                              # 只读：某块的提交演进
+./agents-cooperation/_tools/coop-review.sh [<编号>] [--diff]                    # 只读：摆出自评材料
+./agents-cooperation/_tools/coop-lint.sh [-q]                                   # 只读：块格式校验
+./agents-cooperation/_tools/coop-docs-check.sh [--all] [<路径>…]                # 只读：文件语法体检
+./agents-cooperation/_tools/coop-new-block.sh -f <功能> -t "<标题>" [-d <文档>] [-a <作者>]
+./agents-cooperation/_tools/coop-record.sh <编号> [sha]                         # 回写分支 / commit
 ```
 
 几条硬约定：
@@ -438,7 +442,7 @@ commit 的 sha 只有提交之后才知道，所以默认两步：
 - 思路确实换了（推翻重做）→ 新开一个块，把旧块按用户意思置 `[Valid]: false`（记得先问）。
 - **块只作废、不删除**：删了编号会被回收，`Coop-Block: N` 就会同时指向两批提交。
 - 两个 agent 同时改了同一篇 md → 以仓库里最新的为准；有冲突就停下来问用户。
-- 两个 agent 同时建块 → `coop-new-block.sh` 取号加了锁，同一工作区不会撞；跨工作区靠 `index-reserved.txt`（**要提交，别人 pull 后才有用**）。提交前仍建议重跑 `./coop-lint.sh`。
+- 两个 agent 同时建块 → `coop-new-block.sh` 取号加了锁，同一工作区不会撞；跨工作区靠 `index-reserved.txt`（**要提交，别人 pull 后才有用**）。提交前仍建议重跑 `./_tools/coop-lint.sh`。
 - 一个提交只服务一个块（trailer 只能写一个 `Coop-Block`）；两个块要改就拆成两次提交。
 - `[Index]` 撞号 → 以先提交的为准，后到的换成 `get-index.sh` 给的下一个号，并在提交消息里说明。
 - **仓库不是 git 仓库** → 先问用户（这套流程依赖 git：`Coop-*` trailer、`[GitCommitIds]`）。

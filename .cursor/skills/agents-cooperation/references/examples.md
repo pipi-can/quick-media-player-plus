@@ -170,9 +170,9 @@ agents-cooperation/                  # 放仓库根目录（这个名字是固�
 
 写完之后（`./` 指 `agents-cooperation/`）：
 
-1. `./coop-lint.sh` 自检格式；
+1. `./_tools/coop-lint.sh` 自检格式；
 2. `git add` 这个 md + 改动的文件，提交；
-3. `./coop-record.sh 8` —— 自动把 sha 填进 `[GitCommitIds]`、把 `[GitBranch]` 填成当前分支；
+3. `./_tools/coop-record.sh 8` —— 自动把 sha 填进 `[GitCommitIds]`、把 `[GitBranch]` 填成当前分支；
 4. 再提交一次（登记用）。
 
 回写后这个块头部变成：
@@ -195,7 +195,7 @@ agents-cooperation/                  # 放仓库根目录（这个名字是固�
 上面三篇文档放好后，执行：
 
 ```bash
-./agents-cooperation/get-index.sh
+./agents-cooperation/_tools/get-index.sh
 ```
 
 输出（`#(缺)` 表示人类块还没补编号）：
@@ -221,7 +221,7 @@ agents-cooperation/                  # 放仓库根目录（这个名字是固�
 只看下一个编号（脚本里用）：
 
 ```bash
-next=$(./agents-cooperation/get-index.sh --next)
+next=$(./agents-cooperation/_tools/get-index.sh --next)
 ```
 
 ---
@@ -233,7 +233,7 @@ next=$(./agents-cooperation/get-index.sh --next)
 **不许直接删。** 先搜：
 
 ```bash
-./agents-cooperation/coop-find.sh AudioCtx
+./agents-cooperation/_tools/coop-find.sh AudioCtx
 ```
 
 输出：

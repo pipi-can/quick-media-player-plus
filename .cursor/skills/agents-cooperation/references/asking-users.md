@@ -131,7 +131,7 @@ agent 猜错一次，代价不是多写几行代码，而是**给协作目录里
 先搜：
 
 ```bash
-./agents-cooperation/coop-find.sh <模块名 / 类名 / 文件名>
+./agents-cooperation/_tools/coop-find.sh <模块名 / 类名 / 文件名>
 ```
 
 ### 正例
