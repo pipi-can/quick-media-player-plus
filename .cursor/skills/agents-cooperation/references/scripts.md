@@ -167,6 +167,7 @@ cd agents-cooperation
 
 > **模板 vs 副本**：模板是 `.cursor/skills/agents-cooperation/assets/`（正本），仓库里的 `agents-cooperation/*.sh` 是副本。
 > 改脚本只改模板，然后跑一次 `coop-init.sh` 同步——别直接改副本，下次同步会被覆盖。
+> 同步覆盖前会先看：副本有**未提交**的改动就跳过不覆盖（退 1），已提交的才允许换掉。
 
 ### `selftest.sh`（只读工作区）
 

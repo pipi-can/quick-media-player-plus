@@ -352,11 +352,25 @@ run "$T/agents-cooperation/coop-init.sh" --check-sync
 expect_rc "副本被手改 → --check-sync 失败" 1
 expect_has "点出是哪个文件漂了" "漂移: coop-lint.sh"
 
-# 从模板重新同步 → 只更新那一个，并且提醒看 git diff
+# 这份手改还没提交 → 同步不许覆盖它（覆盖了改动就真丢了）
 run "$T/scripts/coop-init.sh"
-expect_rc "重新同步" 0
+expect_rc "副本有未提交的手改 → 同步拒绝并退 1" 1
+expect_has "说清是'未提交的手改'" "有未提交的手改"
+if grep -q '# 手改的' "$T/agents-cooperation/coop-lint.sh"; then
+  ok "拒绝覆盖：手改还在，没被冲掉"
+else
+  bad "手改被覆盖了（数据丢了！）"
+fi
+
+# 把这份手改提交掉 → 再同步就允许覆盖了（git 里还留着，翻得回来）
+gitq add -A && gitq commit -qm "chore: 手改（测试用）
+
+Coop-Skip: 测试夹具"
+run "$T/scripts/coop-init.sh"
+expect_rc "手改已提交 → 同步允许覆盖" 0
 expect_has "报告'更新 1 个'" "更新 1 个: coop-lint.sh"
 expect_has "提醒先看 git diff" "git -C"
+expect_no "覆盖后手改内容没了（确认真的换成模板了）" "手改的"
 
 run "$T/agents-cooperation/coop-init.sh" --check-sync
 expect_rc "同步后 --check-sync 通过" 0

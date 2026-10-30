@@ -19,6 +19,7 @@
 #
 # ⚠️ 脚本只有 skill 的 assets/ 是"模板"（正本）。agents-cooperation/ 里那份是**副本**：
 #    要改脚本请改模板，然后跑一次 coop-init.sh 同步过去——别直接改副本，否则下次同步就被覆盖。
+#    同步时若副本有**还没提交**的手改，会跳过不覆盖（把改动搞丢这种事不做），并退 1。
 #
 # 已经是初始化状态就只补缺的部分。
 
@@ -65,6 +66,20 @@ find_template_dir() {
   return 1
 }
 
+# 仓库副本是不是"有还没提交的手改"？是的话不许覆盖——覆盖了那份改动就真没了。
+# （已经提交过的改动无所谓：git 里还留着，覆盖了也能捞回来。）
+has_uncommitted_edit() {
+  local p="$1" rel
+  git -C "$root" rev-parse --git-dir >/dev/null 2>&1 || return 1
+  rel="${p#"$root"/}"
+  if git -C "$root" ls-files --error-unmatch -- "$rel" >/dev/null 2>&1; then
+    git -C "$root" diff --quiet -- "$rel" 2>/dev/null || return 0
+    git -C "$root" diff --cached --quiet -- "$rel" 2>/dev/null || return 0
+    return 1
+  fi
+  return 0        # 文件在，但 git 根本没跟踪它 → 也当成手改，别覆盖
+}
+
 # ---- --check-sync：只对账，不改文件 ----
 if (( want_check )); then
   tpl="$(find_template_dir)" || { echo "✗ 找不到模板目录（skill 的 assets/）。" >&2; exit 2; }
@@ -99,7 +114,7 @@ if (( want_sync )); then
     printf '提示：这次是从仓库副本自己跑的，脚本没动。要跟模板对账用 --check-sync。\n'
   else
     mkdir -p "$target"
-    declare -a created=() updated=() same=()
+    declare -a created=() updated=() same=() refused=()
     for f in "$src"/*.sh; do
       name="$(basename "$f")"
       [[ "$name" == "selftest.sh" ]] && continue      # 回归测试脚本属于 skill，不进协作目录
@@ -107,6 +122,8 @@ if (( want_sync )); then
         cp "$f" "$target/$name"; chmod +x "$target/$name"; created+=("$name")
       elif cmp -s "$f" "$target/$name"; then
         same+=("$name")
+      elif has_uncommitted_edit "$target/$name"; then
+        refused+=("$name")          # 手改还没提交 → 不覆盖，免得把改动搞丢
       else
         cp "$f" "$target/$name"; chmod +x "$target/$name"; updated+=("$name")
       fi
@@ -114,12 +131,17 @@ if (( want_sync )); then
     printf '协作目录: %s\n' "$target"
     if (( ${#created[@]} )); then printf '  新建 %d 个: %s\n' "${#created[@]}" "${created[*]}"; fi
     if (( ${#updated[@]} )); then printf '  更新 %d 个: %s\n' "${#updated[@]}" "${updated[*]}"; fi
+    if (( ${#refused[@]} )); then
+      printf '  跳过 %d 个（有未提交的手改）: %s\n' "${#refused[@]}" "${refused[*]}" >&2
+      printf '  ✗ 这几个没动。先把你的改动提交或丢弃，再回来同步；否则会被覆盖掉。\n' >&2
+    fi
     printf '  未变 %d 个\n' "${#same[@]}"
     if (( ${#updated[@]} )); then
       printf '\n⚠️ 有脚本被更新了——提交前先看一眼改了什么：\n'
       printf '    git -C "%s" diff -- agents-cooperation/\n' "$root"
       printf '  记住：模板（skill 的 assets/）才是正本；仓库那份是副本，别直接改它。\n'
     fi
+    if (( ${#refused[@]} )); then exit 1; fi
   fi
 fi
 

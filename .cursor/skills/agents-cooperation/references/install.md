@@ -63,7 +63,8 @@ Cursor 直接读 `.cursor/rules/*.mdc` 和 `.cursor/skills/<名字>/SKILL.md`，
 
 > **模板 vs 副本**：`.cursor/skills/agents-cooperation/assets/` 里的脚本是**正本（模板）**，
 > `agents-cooperation/` 里那份是**副本**。要改脚本改模板，然后重跑一次 `coop-init.sh` 同步过去——
-> **别直接改副本**，下次同步就会被覆盖。想确认两边一致：`./agents-cooperation/coop-init.sh --check-sync`。
+> **别直接改副本**，下次同步就会被覆盖（副本有未提交的手改时，同步会跳过它并退 1，不会闷声冲掉）。
+> 想确认两边一致：`./agents-cooperation/coop-init.sh --check-sync`。
 
 **先别急着装钩子**——第一次提交（把 rule / skill / 数据目录加进来）还没有 `Coop-Block` trailer，会被钩子拦。所以顺序是：
 
